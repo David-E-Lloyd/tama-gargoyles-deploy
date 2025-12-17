@@ -30,7 +30,19 @@ public class GargoyleController {
     @GetMapping("/game")
     public String game(Model model) {
         User user = currentUserService.getCurrentUser();
-        Gargoyle g = gargoyleRepository.findByUserId(user.getId()).orElseThrow();
+
+        var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
+        if (gargoyles.isEmpty()) {
+            // MVP: no creature yet - send somewhere sensible
+            return "redirect:";
+        }
+
+        // MVP selection rule:
+        // Prefer CHILD if one exists, otherwise pick the first by id.
+        Gargoyle g = gargoyles.stream()
+                .filter(x -> x.getType() == Gargoyle.Type.CHILD)
+                        .findFirst()
+                                .orElse(gargoyles.get(0));
 
         // ROCK-SOLID ORDER:
         // 1) Resume first (prevents offline gap)
@@ -50,7 +62,14 @@ public class GargoyleController {
     @PostMapping("/gargoyles/pause")
     public String pause() {
         User user = currentUserService.getCurrentUser();
-        Gargoyle g = gargoyleRepository.findByUserId(user.getId()).orElseThrow();
+
+        var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
+        if (gargoyles.isEmpty()) return "redirect:/";
+
+        Gargoyle g = gargoyles.stream()
+                        .filter(x -> x.getType() == Gargoyle.Type.CHILD)
+                                .findFirst()
+                                        .orElse(gargoyles.get(0));
 
         timeService.pause(g);
         gargoyleRepository.save(g);
