@@ -2,10 +2,12 @@ package com.example.tama_gargoyles.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "gargoyles")
 public class Gargoyle {
@@ -16,28 +18,27 @@ public class Gargoyle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name="user_id", nullable = false)
     private User user;
 
-    private Integer age;
+    private Integer age = 0;
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private Type type = Type.CHILD;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status =Status.ACTIVE;
 
-    private Integer hunger;
-    private Integer happiness;
-    private Integer health;
-    private Integer experience;
-    private Integer strength;
-    private Integer speed;
-    private Integer intelligence;
+    private Integer hunger = 100;
+    private Integer happiness = 100;
+    private Integer health = 100;
+    private Integer experience = 0;
+    private Integer strength = 25;
+    private Integer speed = 10;
+    private Integer intelligence = 10;
 
     // Keeping your existing schema fields for now
     @Column(name="last_fed")
@@ -63,7 +64,7 @@ public class Gargoyle {
     private long activeMinutes = 0;
 
     // JPA requires a no-args constructor
-    public Gargoyle() {}
+//    public Gargoyle() {}
 
     // Simple MVP constructor
     public Gargoyle(User user) {
