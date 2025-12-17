@@ -2,10 +2,12 @@ package com.example.tama_gargoyles.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "gargoyles")
 public class Gargoyle {
@@ -62,18 +64,18 @@ public class Gargoyle {
     private long activeMinutes = 0;
 
     // JPA requires a no-args constructor
-    public Gargoyle() {}
+//    public Gargoyle() {}
 
     // Simple MVP constructor
-//    public Gargoyle(User user) {
-//        this.user = user;
-//        this.type = Type.CHILD;
-//        this.status = Status.ACTIVE;
-//
-//        // sensible defaults
-//        this.hunger = 100;
-//        this.happiness = 100;
-//        this.health = 100;
-//        this.experience = 0;
-//    }
+    public Gargoyle(User user) {
+        this.user = user;
+        this.type = Type.CHILD;
+        this.status = Status.ACTIVE;
+
+        // sensible defaults
+        this.hunger = 100;
+        this.happiness = 100;
+        this.health = 100;
+        this.experience = 0;
+    }
 }
