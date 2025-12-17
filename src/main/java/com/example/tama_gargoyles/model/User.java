@@ -3,8 +3,11 @@ package com.example.tama_gargoyles.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Generated;
+import lombok.NoArgsConstructor;
 
+
+import lombok.Generated;
+@NoArgsConstructor
 @Data
 @Entity
 @Table(name = "users")
@@ -17,10 +20,6 @@ public class User {
     private Integer rocks;
     private Integer bugs;
     private Integer mystery_food;
-
-    public User(){
-
-    }
 
     public User(String email) {
         this.username = "null";
