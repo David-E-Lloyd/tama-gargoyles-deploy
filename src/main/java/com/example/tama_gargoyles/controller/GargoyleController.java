@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class GargoyleController {
@@ -29,11 +30,11 @@ public class GargoyleController {
     }
 
     @PostMapping("/hunger")
-    public String decreaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId){
+    public RedirectView decreaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setHunger(gargoyle.getHunger() + delta);
+        gargoyle.setHunger(Math.min(gargoyle.getHunger() + delta, 100));
         gargoyleRepository.save(gargoyle);
-        return "index";
+        return new RedirectView("/game");
     }
 
     @GetMapping("/game")
