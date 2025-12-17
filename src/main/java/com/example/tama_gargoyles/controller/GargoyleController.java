@@ -20,19 +20,11 @@ public class GargoyleController {
     @Autowired
     private UserRepository userRepository;
 
-//    @GetMapping("/gargoyles")
-//    public ModelAndView allGargoyles() {
-//        ModelAndView modelAndView = new ModelAndView("/gargoyles/gargoyles");
-//        Iterable<Gargoyle> AllGargoyles = gargoyleRepository.findAll();
-////        Iterable AllGargoyles = gargoyleRepository.findAll();
-//        modelAndView.addObject("AllGargoyles", AllGargoyles);
-//        return modelAndView;
-
-
     @GetMapping("/gargoyles")
-    public String list(Gargoyle gargoyle) {
-        gargoyle.addAttribute("gargoyles", gargoyleRepository.findAll());
-        return "/gargoyles/gargoyles";
+    public ModelAndView allGargoyles() {
+        ModelAndView modelAndView = new ModelAndView("gargoyles/gargoyles");
+        modelAndView.addObject("gargoyles", gargoyleRepository.findAll());
+        return modelAndView;
 }
 
     @GetMapping("/gargoyles/new")
@@ -47,6 +39,8 @@ public class GargoyleController {
     // Spring Boot uses the form data to create an instance of gargoyle
     // which is then passed in as an arg here
     public RedirectView create(Gargoyle gargoyle) {
+        User user = userRepository.findById(1L).orElseThrow();
+        gargoyle.setUser(user);
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/gargoyles");
     }

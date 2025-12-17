@@ -14,20 +14,17 @@ public class Gargoyle {
     private Long id;
     private String name;
 
-    public void addAttribute(String gargoyles, Iterable<Gargoyle> all) {
-    }
-
     private enum Type {
         BAD,
         GOOD,
         CHILD
     }
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name="user_id", nullable = false)
     private User user;
 
-    private Integer age;
+    private Integer age = 0;
 
     private enum Status {
         ACTIVE,
@@ -35,37 +32,27 @@ public class Gargoyle {
     }
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private Type type = Type.CHILD;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status =Status.ACTIVE;
 
-    private Integer hunger;
-    private Integer happiness;
-    private Integer health;
-    private Integer experience;
-    private Integer strength;
-    private Integer speed;
-    private Integer intelligence;
-    private Float last_fed;
-    private Float last_played;
-    private Float left_at;
+    private Integer hunger = 100;
+    private Integer happiness = 100;
+    private Integer health = 100;
+    private Integer experience = 0;
+    private Integer strength = 25;
+    private Integer speed = 10;
+    private Integer intelligence = 10;
+    private Float last_fed = 6.5F;
+    private Float last_played = 19.25F;
+    private Float left_at = 21.75F;
 
     public Gargoyle() {}
 
-    public Gargoyle(User user, Type type, Status status) {
-        this.user = user;
-        this.type = Type.CHILD;
-        this.status = Status.ACTIVE;
-//        this.hunger = 100;
-//        this.happiness = 100;
-//        this.health = 100;
-//        this.experience = 100;
-//        this.strength = 100;
-//        this.speed = 100;
-//        this.intelligence = 100;
-//        this.last_fed = 6.5F;
-//        this.last_played = 19.25F;
-//        this.left_at = 21.75F;
-    }
+//    public Gargoyle(User user, Type type, Status status) {
+//        this.user = user;
+//        this.type = Type.CHILD;
+//        this.status = Status.ACTIVE;
+//    }
 }

@@ -7,7 +7,7 @@
 <body>
 <h1>It's time to name your new gargoyle</h1>
 <!--form to capture name of new gargoyle-->
-<form th:action="@{'/gargoyle'}" th:object="${gargoyle}" method="post">
+<form th:action="@{'/gargoyles'}" th:object="${gargoyle}" method="post">
     <label th:for="name">Name:</label><br>
     <input type="text" th:field="*{name}"/> <br><br>
 
