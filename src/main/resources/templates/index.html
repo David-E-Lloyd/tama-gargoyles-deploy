@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Success</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <body>
-    <h1>Success!</h1>
+<h1>Tama Gargoyles</h1>
+
+<div sec:authorize="isAnonymous()">
+    <p>You are not logged in.</p>
+    <a href="/oauth2/authorization/auth0">Log in with Auth0</a>
+</div>
+
+<div sec:authorize="isAuthenticated()">
+    <p>You are logged in.</p>
+    <a href="/game">Go to game</a>
+
+    <form th:action="@{/logout}" method="post" style="margin-top: 1rem;">
+        <button type="submit">Logout</button>
+    </form>
+</div>
 </body>
 </html>
