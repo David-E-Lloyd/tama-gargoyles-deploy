@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Create your Gargoyle</title>
+</head>
+<body>
+<h1>It's time to name your new gargoyle</h1>
+<!--form to capture name of new gargoyle-->
+<form th:action="@{'/gargoyle'}" th:object="${gargoyle}" method="post">
+    <label th:for="name">Name:</label><br>
+    <input type="text" th:field="*{name}"/> <br><br>
+
+<!--button to create -->
+<button type="submit" name="Create" value="">Create</button>
+</form>
+<br><br>
+<a href="/homepage">Back</a>
+</body>
+</html>

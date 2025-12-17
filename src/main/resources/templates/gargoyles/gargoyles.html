@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta charset="UTF-8">
+    <title>All Gargoyles</title>
+</head>
+<body>
+
+<h3>Here is a listing of all of our gargoyles</h3>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>age</th>
+        <th>type</th>
+        <th>status</th>
+        <th>hunger</th>
+        <th>happiness</th>
+        <th>health</th>
+        <th>experience</th>
+        <th>strength</th>
+        <th>speed</th>
+        <th>intelligence</th>
+
+
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="gargoyle : ${allGargoyles}">
+        <td th:text="${gargoyle.id}"></td>
+        <td th:text="${gargoyle.name}"></td>
+        <td th:text="${gargoyle.age}"></td>
+        <td th:text="${gargoyle.type}"></td>
+        <td th:text="${gargoyle.status}"></td>
+        <td th:text="${gargoyle.hunger}"></td>
+        <td th:text="${gargoyle.happiness}"></td>
+        <td th:text="${gargoyle.health}"></td>
+        <td th:text="${gargoyle.experience}"></td>
+        <td th:text="${gargoyle.strength}"></td>
+        <td th:text="${gargoyle.speed}"></td>
+        <td th:text="${gargoyle.intelligence}"></td>
+
+
+    </tr>
+    </tbody>
+</table>
+<br><br>
+
+</body>
+</html>

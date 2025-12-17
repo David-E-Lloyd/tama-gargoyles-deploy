@@ -13,6 +13,10 @@ public class Gargoyle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    public void addAttribute(String gargoyles, Iterable<Gargoyle> all) {
+    }
+
     private enum Type {
         BAD,
         GOOD,
@@ -47,9 +51,21 @@ public class Gargoyle {
     private Float last_played;
     private Float left_at;
 
+    public Gargoyle() {}
+
     public Gargoyle(User user, Type type, Status status) {
         this.user = user;
         this.type = Type.CHILD;
         this.status = Status.ACTIVE;
+//        this.hunger = 100;
+//        this.happiness = 100;
+//        this.health = 100;
+//        this.experience = 100;
+//        this.strength = 100;
+//        this.speed = 100;
+//        this.intelligence = 100;
+//        this.last_fed = 6.5F;
+//        this.last_played = 19.25F;
+//        this.left_at = 21.75F;
     }
 }
