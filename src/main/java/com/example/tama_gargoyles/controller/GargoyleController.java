@@ -16,6 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.Authentication;
+
+
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @Controller
 public class GargoyleController {
@@ -67,13 +75,17 @@ public class GargoyleController {
     }
 
     @GetMapping("/game")
-    public String game(Model model) {
-        User user = currentUserService.getCurrentUser();
+    public String game(Model model, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
 
         var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
+
+        // If this is a brand new Auth0 user, create their first creature.
         if (gargoyles.isEmpty()) {
-            // MVP: no creature yet - send somewhere sensible
-            return "redirect:";
+            Gargoyle newborn = new Gargoyle(user);
+            newborn.setName("Egg-" + user.getId()); // UNIQUE constraint safe
+            gargoyleRepository.save(newborn);
+            gargoyles = java.util.List.of(newborn);
         }
 
         // MVP selection rule:
@@ -99,8 +111,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/gargoyles/pause")
-    public String pause() {
-        User user = currentUserService.getCurrentUser();
+    public String pause(Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
 
         var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
         if (gargoyles.isEmpty()) return "redirect:/";
@@ -139,7 +151,11 @@ public class GargoyleController {
     public RedirectView create(Gargoyle gargoyle) {
         User user = userRepository.findById(1L).orElseThrow();
         gargoyle.setUser(user);
-        gargoyleRepository.save(gargoyle);
+        if (gargoyle.getName().isEmpty() || gargoyle.getName().length() > 30){
+            return new RedirectView("/gargoyles");
+        }else{
+            gargoyleRepository.save(gargoyle);
+        }
         return new RedirectView("/gargoyles");
     }
 
@@ -160,8 +176,15 @@ public class GargoyleController {
         Gargoyle gargoyle = gargoyleRepository.findById(id)
                 .orElseThrow();
 
-        gargoyle.setName(name);
-        gargoyleRepository.save(gargoyle);
+
+        // backend name validation
+        if (name.isEmpty() || name.length() > 30){
+            return "redirect:/game";
+        }else{
+            System.out.println(name.length());
+            gargoyle.setName(name);
+            gargoyleRepository.save(gargoyle);
+        }
 
         return "redirect:/game";
     }
