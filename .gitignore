@@ -46,3 +46,4 @@ dependency-reduced-pom.xml
 .env
 **/.DS_Store
 /uploads
+__pycache__
