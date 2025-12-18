@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.Authentication;
+
+
 
 @Controller
 public class GargoyleController {
@@ -67,13 +71,17 @@ public class GargoyleController {
     }
 
     @GetMapping("/game")
-    public String game(Model model) {
-        User user = currentUserService.getCurrentUser();
+    public String game(Model model, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
 
         var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
+
+        // If this is a brand new Auth0 user, create their first creature.
         if (gargoyles.isEmpty()) {
-            // MVP: no creature yet - send somewhere sensible
-            return "redirect:";
+            Gargoyle newborn = new Gargoyle(user);
+            newborn.setName("Egg-" + user.getId()); // UNIQUE constraint safe
+            gargoyleRepository.save(newborn);
+            gargoyles = java.util.List.of(newborn);
         }
 
         // MVP selection rule:
@@ -99,8 +107,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/gargoyles/pause")
-    public String pause() {
-        User user = currentUserService.getCurrentUser();
+    public String pause(Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
 
         var gargoyles = gargoyleRepository.findAllByUserIdOrderByIdAsc(user.getId());
         if (gargoyles.isEmpty()) return "redirect:/";
