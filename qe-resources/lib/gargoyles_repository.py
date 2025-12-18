@@ -36,7 +36,22 @@ class GargoylesRepository:
     def update_hunger(self, gargoyle_id, new_hunger):
         query = 'UPDATE gargoyles SET hunger = %s WHERE id = %s'
         result = self._connection.execute(query, [new_hunger, gargoyle_id])
-        return result[0] if result else None       
+        return result[0] if result else None 
+
+    def update_happiness(self, gargoyle_id, new_happiness):
+        query = 'UPDATE gargoyles SET happiness = %s WHERE id = %s'
+        result = self._connection.execute(query, [new_happiness, gargoyle_id])
+        return result[0] if result else None
+
+    def update_name(self, gargoyle_id, new_name):
+        query = 'UPDATE gargoyles SET name = %s WHERE id = %s'
+        return self._connection.execute(query, [new_name, gargoyle_id])
+
+
+    def count_gargoyles(self):
+        query = 'SELECT COUNT(*) as count FROM gargoyles'
+        result = self._connection.execute(query)
+        return result[0]['count'] if result else 0
 
 
 
@@ -59,8 +74,25 @@ gargoylesrepository = GargoylesRepository(connection)
 # print(f"Gargoyle ID: {gg_id} & Gargoyle name: {gg_name}")
 
 
+#Update happiness & hunger
+# gargoylesrepository.update_happiness(1, 100)
+# gargoylesrepository.update_hunger(1, 80)
 
-updated_gargoyle = gargoylesrepository.update_hunger(1, 80)
+#Update name
+# gargoylesrepository.update_name(1,"Grimclaw")
+
+#Count Gargoyles
+# count = gargoylesrepository.count_gargoyles()
+# print(count)
+
+
+# SEED PSQL
+# $ psql -h 127.0.0.1 {database_name} < {file_containing_sql}
+
+
+
+
+
 
 
 
