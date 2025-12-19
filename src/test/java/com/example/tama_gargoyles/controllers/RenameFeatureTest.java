@@ -54,11 +54,6 @@ public class RenameFeatureTest {
         gargoyle = gargoyleRepository.save(gargoyle);
     }
 
-    @AfterEach
-    void cleanup() {
-        gargoyleRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     @AfterAll
     void teardown() {
@@ -74,7 +69,8 @@ public class RenameFeatureTest {
         driver.findElement(By.name("password")).sendKeys(AUTH0_PASSWORD);
         driver.findElement(By.name("action")).click();
 
-        wait.until(ExpectedConditions.urlContains("/game"));
+        wait.until(ExpectedConditions.urlContains("/"));
+        driver.get("http://localhost:8080/game");
     }
 
     @Test

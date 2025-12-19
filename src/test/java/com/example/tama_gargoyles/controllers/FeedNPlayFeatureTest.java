@@ -59,6 +59,7 @@ public class FeedNPlayFeatureTest {
 
         // Wait until redirected back to the game page
         wait.until(d -> d.getCurrentUrl().endsWith("/"));
+        driver.get("http://localhost:8080/game");
     }
 
     @Test
