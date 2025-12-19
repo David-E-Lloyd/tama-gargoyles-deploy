@@ -7,6 +7,7 @@ body:
       label: Version
       options:
         - MVP
+        - 19th of December Reports
   - type: dropdown
     id: severity
     attributes:
