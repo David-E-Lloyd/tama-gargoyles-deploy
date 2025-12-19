@@ -46,6 +46,7 @@ h2 {
     margin-top: 0;
     text-align: center;
     color: #d4d9ff;
+    text-wrap: wrap;
 }
 
 /* STATS */
