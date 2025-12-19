@@ -46,10 +46,10 @@ public class GargoyleController {
     public RedirectView increaseRocks(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setStrength(Math.min(gargoyle.getStrength() + strengthDelta, 100));
-        gargoyle.setSpeed(Math.min(gargoyle.getSpeed() + speedDelta, 100));
-        gargoyle.setIntelligence(Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100));
-        gargoyle.setHunger(Math.min(gargoyle.getHunger() + hungerDelta, 100));
+        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
@@ -58,10 +58,10 @@ public class GargoyleController {
     public RedirectView increaseBugs(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setStrength(Math.min(gargoyle.getStrength() + strengthDelta, 100));
-        gargoyle.setSpeed(Math.min(gargoyle.getSpeed() + speedDelta, 100));
-        gargoyle.setIntelligence(Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100));
-        gargoyle.setHunger(Math.min(gargoyle.getHunger() + hungerDelta, 100));
+        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
@@ -70,10 +70,10 @@ public class GargoyleController {
     public RedirectView increaseFruits(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setStrength(Math.min(gargoyle.getStrength() + strengthDelta, 100));
-        gargoyle.setSpeed(Math.min(gargoyle.getSpeed() + speedDelta, 100));
-        gargoyle.setIntelligence(Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100));
-        gargoyle.setHunger(Math.min(gargoyle.getHunger() + hungerDelta, 100));
+        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
@@ -83,10 +83,10 @@ public class GargoyleController {
     public RedirectView increaseMystery(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
                                        @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setStrength(Math.min(gargoyle.getStrength() + strengthDelta, 100));
-        gargoyle.setSpeed(Math.min(gargoyle.getSpeed() + speedDelta, 100));
-        gargoyle.setIntelligence(Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100));
-        gargoyle.setHunger(Math.min(gargoyle.getHunger() + hungerDelta, 100));
+        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
