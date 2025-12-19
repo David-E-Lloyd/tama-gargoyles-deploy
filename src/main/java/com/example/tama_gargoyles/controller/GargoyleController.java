@@ -127,18 +127,50 @@ public class GargoyleController {
 
         return "redirect:/";
     }
+
+    @GetMapping("/game/{id}")
+    public String gameForOneGargoyle(@PathVariable Long id, Model model, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+
+        Gargoyle gargoyle = gargoyleRepository.findById(id)
+                .orElseThrow();
+
+
+        timeService.resume(gargoyle);
+        timeService.tick(gargoyle);
+
+        gargoyleRepository.save(gargoyle);
+
+        model.addAttribute("gargoyle", gargoyle);
+        model.addAttribute("gameDaysOld", timeService.gameDaysOld(gargoyle));
+        model.addAttribute("minutesIntoDay", timeService.minutesIntoCurrentDay(gargoyle));
+
+        return "game";
+    }
+
     @Autowired
     private UserRepository userRepository;
 
     @GetMapping("/gargoyles")
-    public ModelAndView allGargoyles() {
+    public ModelAndView allGargoyles(Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+
+        if (user == null) {
+            return new ModelAndView("redirect:/login");
+        }
+
         ModelAndView modelAndView = new ModelAndView("gargoyles/gargoyles");
-        modelAndView.addObject("gargoyles", gargoyleRepository.findAll());
+        modelAndView.addObject(
+                "gargoyles",
+                gargoyleRepository.findAllByUserId(user.getId())
+        );
         return modelAndView;
     }
 
     @GetMapping("/gargoyles/new")
-    public ModelAndView newGargoyleForm() {
+    public ModelAndView newGargoyleForm(Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+
         // this is the space referred to in th:object (look back at the form code)
         Gargoyle gargoyle = new Gargoyle();
         ModelAndView newGargoyleForm = new ModelAndView("gargoyles/new");
@@ -148,15 +180,15 @@ public class GargoyleController {
     @PostMapping("/gargoyles")
     // Spring Boot uses the form data to create an instance of gargoyle
     // which is then passed in as an arg here
-    public RedirectView create(Gargoyle gargoyle) {
-        User user = userRepository.findById(1L).orElseThrow();
+    public RedirectView create(Gargoyle gargoyle, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
         gargoyle.setUser(user);
         if (gargoyle.getName().isEmpty() || gargoyle.getName().length() > 30){
             return new RedirectView("/gargoyles");
-        }else{
-            gargoyleRepository.save(gargoyle);
         }
-        return new RedirectView("/gargoyles");
+        Gargoyle saved = gargoyleRepository.save(gargoyle);
+
+        return new RedirectView("/game/" + saved.getId());
     }
 
     @GetMapping("/gargoyle/{id}/rename")
@@ -169,7 +201,7 @@ public class GargoyleController {
 
 
     @PostMapping("/gargoyle/{id}/rename")
-    public String renameGargoyle(
+    public RedirectView renameGargoyle(
             @PathVariable Long id,
             @RequestParam String name
     ) {
@@ -179,14 +211,15 @@ public class GargoyleController {
 
         // backend name validation
         if (name.isEmpty() || name.length() > 30){
-            return "redirect:/game";
+            return new RedirectView("/game/");
         }else{
             System.out.println(name.length());
             gargoyle.setName(name);
-            gargoyleRepository.save(gargoyle);
         }
+        Gargoyle saved = gargoyleRepository.save(gargoyle);
 
-        return "redirect:/game";
+
+        return new RedirectView("/game/" + saved.getId());
     }
 
 
