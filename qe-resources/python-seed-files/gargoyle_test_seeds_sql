@@ -1,0 +1,108 @@
+-- The job of this file is to reset all of our important database tables.
+-- And add any data that is needed for the tests to run.
+-- This is so that our tests, and application, are always operating from a fresh
+-- database state, and that tests don't interfere with each other.
+
+-- First, we must delete (drop) all our tables
+-- Drop the table if it exists (cascade removes dependent objects)
+DROP TABLE IF EXISTS gargoyles CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Create users table
+CREATE TABLE users (
+    id bigserial PRIMARY KEY,
+    username varchar(255) NOT NULL UNIQUE,
+    email varchar(225) NOT NULL UNIQUE,
+    rocks INT,
+    bugs INT,
+    mystery_food INT
+);
+
+-- ==================================
+-- Seed Data for users (7 records)
+-- ==================================
+
+INSERT INTO users (username, email, rocks, bugs, mystery_food)
+VALUES
+  ('stoneking',   'stoneking@example.com',   100,  50,  5),
+  ('nightwatch',  'nightwatch@example.com',   80, 120,  2),
+  ('rookie',      'rookie@example.com',       20,  10,  0),
+  ('skywarden',   'skywarden@example.com',    60,  40,  3),
+  ('cryptlord',   'cryptlord@example.com',   150, 200, 10),
+  ('sunseeker',   'sunseeker@example.com',    45,  25,  1),
+  ('towerguard',  'towerguard@example.com',   90,  70,  4);
+
+-- Create gargoyles table
+CREATE TABLE gargoyles (
+    id bigserial PRIMARY KEY,
+    name varchar(255) NOT NULL UNIQUE,
+    age INT,
+    type VARCHAR(10) NOT NULL CHECK (type IN ('BAD', 'GOOD', 'CHILD')),
+    status VARCHAR(10) NOT NULL CHECK (status IN ('ACTIVE', 'RETIRED')),
+    hunger INT,
+    happiness INT,
+    health INT,
+    experience INT,
+    strength INT,
+    speed INT,
+    intelligence INT,
+    last_fed FLOAT,
+    last_played FLOAT,
+    left_at FLOAT,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT fk_gargoyles_user
+    FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE
+);
+
+
+-- Seed test data with various scenarios
+
+-- 1. Healthy gargoyle (all stats at max)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('HealthyGarg', 5, 'GOOD', 'ACTIVE', 100, 100, 100, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 2. Hungry gargoyle (low hunger, normal happiness)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('HungryGarg', 3, 'CHILD', 'ACTIVE', 10, 80, 90, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 3. Unhappy gargoyle (normal hunger, low happiness)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('SadGarg', 7, 'GOOD', 'ACTIVE', 85, 15, 85, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 4. Critical state gargoyle (both hunger and happiness very low)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('CriticalGarg', 2, 'BAD', 'ACTIVE', 5, 5, 20, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 5. Mid-range stats (for testing incremental changes)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('MidRangeGarg', 4, 'GOOD', 'ACTIVE', 50, 50, 50, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 6. Zero stats (boundary testing)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('ZeroGarg', 1, 'CHILD', 'ACTIVE', 0, 0, 10, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 7. Hungry but not critical (tests the < 30 threshold for accelerated happiness decay)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('ThresholdGarg', 6, 'BAD', 'ACTIVE', 29, 70, 80, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 8. Just above threshold (hunger = 31, for comparison with above)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('AboveThresholdGarg', 6, 'GOOD', 'ACTIVE', 31, 70, 80, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 9. Retired gargoyle (different status for testing)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('RetiredGarg', 100, 'GOOD', 'RETIRED', 100, 100, 100, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 10. Different user's gargoyle (for testing user filtering)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('OtherUserGarg', 3, 'CHILD', 'ACTIVE', 75, 75, 75, 0, 10, 10, 10, NULL, NULL, NULL, 2);
+
+-- 11. BAD type gargoyle (tests different type)
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('BadGarg', 8, 'BAD', 'ACTIVE', 60, 40, 70, 0, 10, 10, 10, NULL, NULL, NULL, 1);
+
+-- 12. Edge case: exactly at boundaries
+INSERT INTO gargoyles (name, age, type, status, hunger, happiness, health, experience, strength, speed, intelligence, last_fed, last_played, left_at, user_id)
+VALUES ('BoundaryGarg', 1, 'CHILD', 'ACTIVE', 100, 0, 50, 0, 10, 10, 10, NULL, NULL, NULL, 1);
