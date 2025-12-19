@@ -16,7 +16,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,23 +30,29 @@ class GameFlowFeatureTest {
     @MockitoBean GargoyleRepository gargoyleRepository;
     @MockitoBean CurrentUserService currentUserService;
     @MockitoBean GargoyleTimeService timeService;
-    @MockitoBean
-    UserRepository userRepository;
+    @MockitoBean UserRepository userRepository;
 
     @Test
-    void redirects_whenUserHasNoGargoyles() throws Exception {
+    void createsNewborn_whenUserHasNoGargoyles_andRendersGame() throws Exception {
         User u = new User();
         u.setId(1L);
 
-        when(currentUserService.getCurrentUser(any(org.springframework.security.core.Authentication.class)))
-                .thenReturn(u);
+        when(currentUserService.getCurrentUser(any())).thenReturn(u);
         when(gargoyleRepository.findAllByUserIdOrderByIdAsc(1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/game"))
-                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/game").with(oauth2Login()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("game"))
+                .andExpect(model().attributeExists("gargoyle"))
+                .andExpect(model().attributeExists("gameDaysOld"))
+                .andExpect(model().attributeExists("minutesIntoDay"));
 
-        verifyNoInteractions(timeService);
-        verify(gargoyleRepository, never()).save(any());
+        // Controller should still apply time logic + persist
+        verify(timeService, times(1)).resume(any(Gargoyle.class));
+        verify(timeService, times(1)).tick(any(Gargoyle.class));
+
+        // Newborn save + final save (often 2 saves)
+        verify(gargoyleRepository, atLeastOnce()).save(any(Gargoyle.class));
     }
 
     @Test
@@ -58,13 +66,12 @@ class GameFlowFeatureTest {
         Gargoyle child = new Gargoyle();
         child.setType(Gargoyle.Type.CHILD);
 
-        when(currentUserService.getCurrentUser(any(org.springframework.security.core.Authentication.class)))
-                .thenReturn(u);
+        when(currentUserService.getCurrentUser(any())).thenReturn(u);
         when(gargoyleRepository.findAllByUserIdOrderByIdAsc(1L)).thenReturn(List.of(bad, child));
         when(timeService.gameDaysOld(child)).thenReturn(0L);
         when(timeService.minutesIntoCurrentDay(child)).thenReturn(0L);
 
-        mockMvc.perform(get("/game"))
+        mockMvc.perform(get("/game").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("game"))
                 .andExpect(model().attribute("gargoyle", child))
@@ -89,13 +96,12 @@ class GameFlowFeatureTest {
         Gargoyle second = new Gargoyle();
         second.setType(Gargoyle.Type.BAD);
 
-        when(currentUserService.getCurrentUser(any(org.springframework.security.core.Authentication.class)))
-                .thenReturn(u);
+        when(currentUserService.getCurrentUser(any())).thenReturn(u);
         when(gargoyleRepository.findAllByUserIdOrderByIdAsc(1L)).thenReturn(List.of(first, second));
         when(timeService.gameDaysOld(first)).thenReturn(0L);
         when(timeService.minutesIntoCurrentDay(first)).thenReturn(0L);
 
-        mockMvc.perform(get("/game"))
+        mockMvc.perform(get("/game").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("game"))
                 .andExpect(model().attribute("gargoyle", first));
