@@ -32,6 +32,8 @@ public class GargoyleController {
     private final CurrentUserService currentUserService;
     private final GargoyleTimeService timeService;
 
+    private static final long ADULT_AT_GAME_DAYS = 3;
+
     public GargoyleController(
             GargoyleRepository gargoyleRepository,
             CurrentUserService currentUserService,
@@ -100,6 +102,11 @@ public class GargoyleController {
         // 2) Then tick (applies only active time)
         timeService.resume(g);
         timeService.tick(g);
+
+        // Promote to adult if old enough
+        long daysOld = timeService.gameDaysOld(g);
+        if (g.getType() == Gargoyle.Type.CHILD && daysOld >=3)
+            g.setType(Gargoyle.Type.GOOD); // MVP default adult
 
         gargoyleRepository.save(g);
 
