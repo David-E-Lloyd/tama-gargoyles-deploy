@@ -205,5 +205,21 @@ These should be addressed explicitly and recorded here when decided.
 
 ---
 
+## Stat-Based Growth & Death (Deferred)
+
+**Decision**
+Stat-based growth (food/games affecting strength, speed, intelligence),
+health decay from neglect, and permanent death are deferred beyond MVP.
+
+**Reasoning**
+- Core pet loop and battle mechanics are the assessment priority
+- Implementing these systems cleanly would significantly increase scope
+- Stats already exist, making future implementation possible without refactor
+
+This decision may be revisited if time allows.
+
+
+---
+
 **This file exists to save time and avoid rework.  
 If you find yourself re-debating something, check here first.**

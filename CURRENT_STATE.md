@@ -63,6 +63,23 @@
 
 ---
 
+### Stat Growth & Death (Not Yet Implemented)
+
+Design intent (from team rules):
+- Different foods and games affect strength, speed, and intelligence
+- Long-term neglect reduces health
+- Gargoyles can die if health reaches 0
+
+Current implementation:
+- Food and play affect hunger and happiness only
+- Stats exist but do not yet change via food or games
+- Health loss occurs only via battle
+- Death is not implemented
+
+These mechanics are considered **future scope**, not MVP.
+
+---
+
 ### Virtual-Time Lifecycle
 - There is **no explicit ADULT enum**
 - “Adulthood” is derived from **virtual age**
