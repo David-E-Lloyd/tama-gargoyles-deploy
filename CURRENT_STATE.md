@@ -1,12 +1,14 @@
 # Tama Gargoyles — CURRENT_STATE
 
-> Canonical snapshot of the Tama Gargoyles project  
-> This document reflects what is **implemented or explicitly agreed**,  
-> and clearly marks what is **unknown, incomplete, or missing**.
+> **Single source of truth for the Tama Gargoyles project**  
+> This document reflects what is **actually implemented** plus clearly marked
+> **known risks and decisions still to be made**.
+>
+> If behaviour changes, this document must be updated.
 
 ---
 
-## 1. Confirmed Systems
+## 1. Confirmed Systems (Implemented)
 
 ### Authentication & Authorization
 - OAuth2 login via **Auth0** using **Spring Security**
@@ -19,7 +21,7 @@
 
 ### User System
 - Users are created automatically on first login
-- User identity is based on the Auth0 email claim
+- Identity is based on the Auth0 email claim
 - Username derivation order:
     1. Custom Auth0 claim `https://myapp.com/username`
     2. `preferred_username`
@@ -35,249 +37,283 @@
 
 ### Gargoyle (Pet) System
 - Each user owns **one or more Gargoyles**
-- If a user has **no gargoyles**, one is automatically created
+- If a user has **no gargoyles**, one is automatically created on first visit to `/game`
 - Gargoyles are persisted in **PostgreSQL**
-- Gargoyles have the following stats:
-    - hunger
-    - happiness
+- Gargoyles have stats:
+    - hunger (0–100)
+    - happiness (0–100)
     - health
     - experience
     - strength
     - speed
     - intelligence
-- Gargoyles have both a **Type** and a **Status**
+- Gargoyles have:
+    - `type` (`CHILD`, `GOOD`, `BAD`)
+    - `status`
+    - virtual-time fields (`activeMinutes`, `lastTickAt`, pause flags)
 
 ---
 
-### Game Flow (`/game`)
-- User must be authenticated
-- Gargoyle selection logic:
-    - Prefer a `CHILD` gargoyle if one exists
-    - Otherwise select the first gargoyle by ID
-- On each visit to `/game`:
-    1. `resume()` is called
-    2. `tick()` is called
-    3. Gargoyle is saved
-- Game data is rendered using **Thymeleaf**
+## 2. Lifecycle & Adulthood (Implemented)
+
+### Gargoyle Creation
+- New gargoyle created via `new Gargoyle(user)`
+- Initial name: `"Egg-" + user.getId()` (safe with UNIQUE constraint)
+- Initial type: `CHILD`
 
 ---
 
-### Virtual Time System
-- Time progression is based on **real-world elapsed time**
-- Time decay applies only when the gargoyle is **not paused**
-- Hunger and happiness decay per minute
-- Happiness decays faster when hunger is low
-- Active time is tracked using `activeMinutes`
-- Game “days” are derived from active minutes
-- Pause/resume system prevents offline decay
-- Implemented using `java.time.Clock`
-- No scheduled jobs are used
+### Virtual-Time Lifecycle
+- There is **no explicit ADULT enum**
+- “Adulthood” is derived from **virtual age**
+- Virtual age is calculated from `activeMinutes`
 
 ---
 
-### Gargoyle Interaction & Stats Management
-- Hunger and happiness are bounded between `0–100`
-- Stats are modified via POST endpoints:
-    - `/hunger-increase`
-    - `/hunger-decrease`
-    - `/entertainment-increase`
-    - `/entertainment-decrease`
-- Values are clamped within valid ranges
+### Promotion Logic (runs in `/game`)
+- After time tick, if:
+    - `type == CHILD`
+    - `gameDaysOld >= 3`
+- Gargoyle is promoted to:
+    - `GOOD` if `happiness >= 60 && hunger >= 60`
+    - `BAD` otherwise
+
+GOOD/BAD represent adulthood in practice.
 
 ---
 
-### Pause System
-- `/gargoyles/pause` pauses the currently selected gargoyle
-- Uses the same selection logic as `/game`
+## 3. Virtual Time System (Implemented)
+
+### Time Tracking
+- Implemented via `GargoyleTimeService`
+- Uses real clock time (`Instant`)
+- Time advances only if:
+    - gargoyle is **not paused**
+    - elapsed minutes > 0
 
 ---
 
-### Gargoyle CRUD (Partial / Mixed Use)
-- List all gargoyles: `/gargoyles`
-- Create gargoyle via form:
-    - `GET /gargoyles/new`
-    - `POST /gargoyles`
-- Rename gargoyle:
-    - `GET /gargoyle/{id}/rename`
-    - `POST /gargoyle/{id}/rename`
-- Purpose (player-facing vs admin/debug) is unclear
+### Decay Rules
+While active:
+- `activeMinutes += elapsedMinutes`
+- hunger decreases by `minutes * 2`
+- happiness decreases by `minutes * 3`
+- if hunger < 30:
+    - happiness decreases by an additional `minutes`
 
 ---
 
-### Testing
-- Controller tests use `@WebMvcTest`
-- Security is enabled in tests
-- OAuth2 login simulated with `oauth2Login()`
-- Services and repositories are mocked
-- Order of operations (`resume → tick`) is explicitly tested
-- Redirect behaviour and model attributes are tested
+### Pause / Resume
+- `pause()` freezes time progression
+- `resume()` resets `lastTickAt` to now
+- Prevents large decay after being offline
 
 ---
 
-## 2. Life Stages & Types
-
-### Referenced Life Stages
-- **EGG**
-    - Given to the user at the start
-    - Hatches and is named
-    - No explicit in-game behaviour defined in code
-- **CHILD**
-    - Default gargoyle type on creation
-    - Can be fed and played with
-    - Affected by virtual time decay
-    - Cannot battle
-    - Preferred active gargoyle in `/game`
-- **ADULT**
-    - Reached after growing (criteria not defined here)
-    - Only life stage allowed to battle
+### Separation of Concerns
+- Virtual time **only updates in `/game`**
+- `/battle` does **not** advance hunger or happiness
+- Battle is treated as a separate game mode
 
 ---
 
-### Behavioural Types
-- **GOOD**
-    - Mentioned as a type
-    - Intended to follow player commands
-- **BAD**
-    - Mentioned as a type
-    - May disobey commands
-- ⚠️ Transition rules and full behavioural differences are **not fully defined**
+## 4. Game Flow (`/game`) — Implemented
+
+**Controller:** `GargoyleController#game`
+
+1. Resolve current user
+2. Load gargoyles ordered by ID
+3. Auto-create gargoyle if none exist
+4. Select active gargoyle:
+    - Prefer `CHILD` if present
+    - Else first by ID
+5. Apply time updates (strict order):
+    - `resume(g)`
+    - `tick(g)`
+6. Apply promotion logic (see Lifecycle)
+7. Save gargoyle
+8. Add model attributes:
+    - `gargoyle`
+    - `gameDaysOld`
+    - `minutesIntoDay`
+9. Render `game.html`
 
 ---
 
-## 3. Battle System (Partial / At Risk)
-
-⚠️ **Important:**  
-The chat where the battle system was actively implemented is missing.  
-The following reflects only what is explicitly described elsewhere.
-
-### Confirmed Facts
-- Only **ADULT** gargoyles can battle
-- Battles are **turn-based**
-- Player chooses one action:
-    - Strength
-    - Speed
-    - Intelligence
-- Opponent choice is hidden
-
-### Resolution Rules
-- Rock–Paper–Scissors logic:
-    - Strength beats Speed
-    - Speed beats Intelligence
-    - Intelligence beats Strength
-- If both choose the same action:
-    - Higher stat wins the round
-
-### Behaviour Modifiers
-- BAD gargoyles may disobey player commands
-- This can help or harm the player
-
-### Battle Outcomes
-- Battle ends when HP reaches 0
-- If player wins:
-    - Receives 10 special food items (randomised)
-- If player loses:
-    - Gargoyle health decreases by 20%
-    - User receives 2 special food items
-
-⚠️ **Missing / Unverified**
-- Persistence of battles
-- Opponent generation
-- Battle initiation limits
-- Death handling
-- Whether virtual time pauses during battles
+### Stat Interaction Endpoints
+- `POST /hunger-increase`
+- `POST /hunger-decrease`
+- `POST /entertainment-increase`
+- `POST /entertainment-decrease`
+- Values clamped to `0–100`
+- Redirect back to `/game`
 
 ---
 
-## 4. Technical Decisions
+### Pause Endpoint
+- `POST /gargoyles/pause`
+- Uses same selection logic as `/game`
+- Redirects to `/`
 
-### Stack
-- Language: **Java 21**
-- Build Tool: **Maven**
-- Frameworks:
-    - Spring Boot 3.5.x
-    - Spring MVC
-    - Spring Security
-    - Spring Security OAuth2 Client
-    - Spring Data JPA
-    - Flyway
-- Database: **PostgreSQL**
-- ORM: Hibernate / JPA
-- Connection Pool: HikariCP
-- Web Server: Embedded Tomcat 10.1.x
-- UI: **Thymeleaf (server-side rendering)**
+---
+
+## 5. Battle System (MVP — Implemented)
+
+### Core Mechanics
+- Turn-based, rock–paper–scissors style
+- Moves:
+    - `SLAM`
+    - `DASH`
+    - `SNEAK`
+- Resolution:
+    - SLAM beats DASH
+    - DASH beats SNEAK
+    - SNEAK beats SLAM
+    - Same move → DRAW
+- First to **3 points** wins
+
+---
+
+### Battle State
+- Stored **in session** (not persisted)
+- Each user has their own `BattleState`
+- Tracks:
+    - scores
+    - last moves
+    - last outcome
+    - finished flag
+
+---
+
+### Adult-only Access (Actual Behaviour)
+A gargoyle may battle if:
+- `gameDaysOld >= 3`
+
+⚠️ Note:
+- Battle eligibility checks **age**, not type
+- Promotion to GOOD/BAD happens only in `/game`
+
+---
+
+### Battle Routes
+- `GET /battle`
+    - Requires eligible gargoyle by age
+    - Calls `resume()` → `tick()` → save
+    - Renders `battle.html`
+- `POST /battle/move`
+    - Validates eligibility
+    - Plays one turn
+    - Redirects to `/battle`
+- `POST /battle/reset`
+    - Resets battle state
+
+---
+
+## 6. Battle UI (`battle.html`) — Implemented
+
+### Displays
+- Gargoyle name, type, status
+- Player vs opponent score
+- Last turn summary
+- Winner message when finished
+- Static rules text
+
+---
+
+### Inputs
+- Buttons submit moves (`SLAM`, `DASH`, `SNEAK`)
+- CSRF tokens included
+- When finished:
+    - Move buttons hidden
+    - Reset button shown
+
+---
+
+## 7. UI Layer (Confirmed Direction)
+
+- Server-rendered HTML using **Thymeleaf**
 - No frontend JS framework
-- Architecture: MVC (Controller / Service / Repository)
+- JavaFX is **not used** and **not planned**
+
+### Screens
+- Home (`/`)
+    - Login / Logout
+    - Link to game
+- Game (`/game`)
+    - Gargoyle stats + care actions
+    - Conditional “Go to Battle”
+- Battle (`/battle`)
+    - Turn-based battle screen
 
 ---
 
-### Testing
+### Accessibility Commitments
+- Keyboard-accessible controls
+- Visible focus states
+- Text + labels (not colour-only)
+- `<fieldset>` / `<legend>` for move selection
+- `aria-live="polite"` for battle log updates
+
+---
+
+## 8. Technical Stack
+
+- Java 21
+- Spring Boot 3.5.x
+- Spring MVC
+- Spring Security + OAuth2 Client
+- Thymeleaf
+- Spring Data JPA / Hibernate
+- Flyway
+- PostgreSQL
+- HikariCP
+- Maven
+- Embedded Tomcat
+
+---
+
+## 9. Testing
+
 - JUnit 5
 - Mockito
-- spring-security-test
-- Selenium present as a dependency (usage unclear)
+- `@WebMvcTest`
+- `spring-security-test`
+- OAuth2 login simulated via `oauth2Login()`
+- Selenium dependency present (usage unclear)
 
 ---
 
-### Visual Layer
-- JavaFX discussed as a **possible future option**
-- Not currently implemented
-- Not yet aligned with Spring MVC architecture
+## 10. Known Risks & Decisions Needed
+
+### Adulthood Definition
+- “Adult” sometimes means GOOD/BAD
+- Battle checks **age only**
+  ➡️ Team must decide:
+- adult-by-age
+- adult-by-type
+- or both
 
 ---
 
-## 5. Database & Environment
-
-- Application uses Spring profiles (`dev` active)
-- Flyway runs automatically on startup
-- Database **must exist before startup**
-- Flyway does **not** create databases
-- Application fails to start if DB connection fails
-- Database name must exactly match datasource config
-
-⚠️ Known Issue:
-- Database name mismatch:
-    - Created manually: `gargoyle_spring_boot_development`
-    - Configured in Spring: `gargoyle_springboot_development`
+### Hardcoded Thresholds
+- `>= 3 game days` appears in multiple places
+- One comment mentions “5 days”
+  ➡️ Should be centralised to a constant
 
 ---
 
-## 6. Constraints
-
-- Group student project
-- MVP-focused scope
-- Accessibility must be considered
-- Server-rendered UI only (no SPA)
-- Tests must avoid merge conflicts
-- Must be explainable to:
-    - Developers
-    - Student QA testers
+### Battle Input Safety
+- `BattleMove.valueOf(move)` can throw on invalid input
+  ➡️ Needs graceful handling
 
 ---
 
-## 7. Open Questions
-
-- How do gargoyles evolve from CHILD → ADULT?
-- How are GOOD vs BAD types assigned?
-- Are battles persisted or session-based?
-- Does virtual time pause during battles?
-- How often can battles be initiated?
-- How is opponent difficulty generated?
-- What happens when a gargoyle dies?
-- Are inventory limits enforced?
-- Is `/gargoyles` player-facing or admin-only?
-- What is the intended role of Selenium tests?
+### Gargoyle Selection Bias
+- `/game` always prefers CHILD if one exists
+- Older GOOD/BAD gargoyles may not tick by default
+  ➡️ Acceptable for MVP, but must be agreed
 
 ---
 
-## 8. Risks & Known Gaps
-
-- Missing battle-system chat → **high risk of incomplete implementation**
-- JavaFX planning not yet reconciled with Spring MVC
-- EGG stage conceptually present but weakly represented in code
-- Mixed gameplay and CRUD routes blur responsibility boundaries
-- Database naming inconsistency risks repeated environment failures
-
----
-
-**This document is the single source of truth going forward.**
-Any change must be reflected here.
+**This document is the canonical reference for the team.**
+Any behavioural change must be reflected here.
