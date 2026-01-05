@@ -19,12 +19,19 @@ import org.springframework.security.core.Authentication;
 
 import java.util.*;
 
+import java.util.Date;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+
 @Controller
 public class GargoyleController {
 
     private final GargoyleRepository gargoyleRepository;
     private final CurrentUserService currentUserService;
     private final GargoyleTimeService timeService;
+
+    private static final long ADULT_AT_GAME_DAYS = 3;
 
     public GargoyleController(
             GargoyleRepository gargoyleRepository,
@@ -74,13 +81,27 @@ public class GargoyleController {
 
     // Currently thymeleaf just gives zero values, need to program for randomisation
     @PostMapping("/mystery-increase")
-    public RedirectView increaseMystery(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
-                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
+    public RedirectView increaseMystery(@RequestParam Long gargoyleId){
+        Random randomNum = new Random();
+        int toIncrease = randomNum.nextInt(3);
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
-        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
-        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
-        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
-        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
+        if (toIncrease == 0){
+            gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + randomNum.nextInt(1, 25), 100)));
+            gargoyle.setSpeed((Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0))));
+            gargoyle.setIntelligence((Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0))));
+        }
+        else if (toIncrease == 1){
+            gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + randomNum.nextInt(7, 25), 100)));
+            gargoyle.setStrength((Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0))));
+            gargoyle.setIntelligence((Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0))));
+        }
+        else{
+            gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + randomNum.nextInt(1, 25), 100)));
+            gargoyle.setSpeed((Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0))));
+            gargoyle.setStrength((Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0))));
+        }
+        gargoyle.setHunger(100);
+
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
@@ -180,6 +201,16 @@ public class GargoyleController {
         // 2) Then tick (applies only active time)
         timeService.resume(g);
         timeService.tick(g);
+
+        // Promote to adult if old enough, based on how the child was treated
+        long daysOld = timeService.gameDaysOld(g);
+        boolean isOldEnough = daysOld >= 3; // tweak threshold
+
+        if (g.getType() == Gargoyle.Type.CHILD && isOldEnough) {
+            boolean treatedWell = g.getHappiness() >= 60 && g.getHunger() >= 60;
+
+            g.setType(treatedWell ? Gargoyle.Type.GOOD : Gargoyle.Type.BAD);
+        }
 
         gargoyleRepository.save(g);
 
