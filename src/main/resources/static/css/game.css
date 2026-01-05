@@ -215,8 +215,86 @@ h2 {
   100% { transform: rotate(180deg); }
 }
 
+/* STOPWATCH */
+/* Stopwatch Styles (75% of previous 100px size) */
+.stopwatch {
+    position: relative;
+    width: 75px;   /* 75% of 100px */
+    height: 75px;  /* 75% of 100px */
+    background-color: #666; /* lighter dark grey face */
+    border-radius: 50%;
+    border: 2px solid #555; /* slightly darker border for contrast */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2),
+                0 2px 5px rgba(0,0,0,0.15); /* subtle 3D effect */
+    margin: auto;
+    overflow: hidden;
+}
+
+/* Glass reflection overlay */
+.stopwatch::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0) 70%);
+    pointer-events: none;
+}
+
+/* Second hand */
+.stopwatch .hand-second {
+    position: absolute;
+    width: 50%;   /* relative to stopwatch width */
+    height: 2px;
+    background-color: #eee; /* light grey for visibility */
+    top: 50%;
+    left: 50%;
+    transform-origin: 0% 50%;
+    transform: rotate(0deg);
+    animation: sweep-second 5s linear infinite;
+}
+
+/* Minute hand */
+.stopwatch .hand-minute {
+    position: absolute;
+    width: 35%;  /* shorter hand */
+    height: 2px;
+    background-color: #eee; /* light grey */
+    top: 50%;
+    left: 50%;
+    transform-origin: 0% 50%;
+    transform: rotate(-90deg); /* start at 12 o'clock */
+    animation: sweep-minute 60s linear infinite;
+}
+
+/* Animations */
+@keyframes sweep-second {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes sweep-minute {
+    from { transform: rotate(-90deg); }
+    to { transform: rotate(270deg); }
+}
+
+/* Center dot */
+.stopwatch .center-dot {
+    position: absolute;
+    width: 6px;   /* smaller to match smaller stopwatch */
+    height: 6px;
+    background-color: #eee; /* light grey */
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
 /* STATS */
-p {
+{
     margin: 0.4rem 0;
 }
 
