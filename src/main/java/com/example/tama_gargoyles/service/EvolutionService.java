@@ -7,13 +7,14 @@ import java.util.Objects;
 public class EvolutionService {
 
     private static final int GOOD_HAPPINESS = 60;
+    private static final int AGE_TO_EVOLVE = 3;
 
     public boolean evolveGargoyle(Gargoyle g){
 
         Gargoyle.Type gType = g.getType();
         Integer age = g.getAge();
 
-        if (age >= 1 && gType == Gargoyle.Type.CHILD){
+        if (age >= AGE_TO_EVOLVE && gType == Gargoyle.Type.CHILD){
             String currentType = g.getEvolutionType();
             if (Objects.equals(currentType, "None")){
                 String evolutionType = calculateEvolutionType(g);
