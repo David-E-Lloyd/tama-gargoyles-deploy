@@ -440,7 +440,7 @@ body::before{
 
 /* SKY (fallback nebula) */
 .stage__sky{
-  opacity: 1;
+  opacity: 0.9;
   animation: parallax-slow 160s linear infinite;
   background-image:
     radial-gradient(1200px 700px at 25% 20%, rgba(155,92,255,0.14), transparent 60%),
@@ -475,6 +475,7 @@ body::before{
 /* ROOF (fallback silhouette) */
 .stage__roof{
   opacity: 1;
+  filter: brightness(0.85);
   animation: parallax-fast 95s linear infinite;
   background-image:
     linear-gradient(180deg, transparent 0 78%, rgba(0,0,0,0.70) 78%),
@@ -533,6 +534,8 @@ body::before{
   display:grid;
   place-items:center;
   z-index: 5;
+  pointer-events: none;
+
 }
 
 .creature-placeholder{
@@ -541,14 +544,30 @@ body::before{
   text-transform: uppercase;
   font-size: clamp(2rem, 5vw, 3.5rem);
   color: rgba(241,238,255,0.88);
-  text-shadow: var(--glow-cyan);
+  text-shadow:
+  0 10px 22px rgba(0,0,0,0.55),
+  var(--glow-cyan);
 }
 
+/* =========================================================
+   WORK HERE ✅ — CREATURE SPRITE (SAFE)
+   Why: keeps sprite stable + readable on roof
+   ========================================================= */
+
 .creature-sprite{
-  width: min(440px, 70%);
+  width: min(260px, 62%);
   height: auto;
+  display: block;
+
+  /* Looks “sat on roof” instead of floating */
+  transform: translateY(10px);
+
+  /* Readability on dark roof */
   filter: drop-shadow(0 18px 28px rgba(0,0,0,0.55));
+  user-select: none;
+  -webkit-user-drag: none;
 }
+
 
 /* overlays above everything */
 .overlay{ z-index: 10; }

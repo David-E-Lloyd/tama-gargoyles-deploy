@@ -4,9 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="tg-poll-seconds" content="15">
+
     <title>Tama Gargoyles - Game</title>
 
     <link rel="stylesheet" th:href="@{/css/game.css}" />
+
 </head>
 
 <body>
@@ -84,9 +87,9 @@
     </header>
 
     <!-- GAME GRID -->
-    <div class="game-grid">
+    <div class="game-grid" id="game-grid">
 
-        <!-- LEFT HUD: STATUS + TRAITS -->
+    <!-- LEFT HUD: STATUS + TRAITS -->
         <section class="panel hud-panel hud-panel--left" aria-label="Status and traits">
             <h2 class="panel__title">Status</h2>
 
@@ -171,24 +174,17 @@
             <h2 id="creature-area-title" class="sr-only">Creature</h2>
 
             <div class="stage" role="img" aria-label="Gargoyle on a church roof under a starry sky">
-                <!-- Parallax layers (fallback gradients until assets exist) -->
+                <!-- Parallax layers -->
                 <div class="stage__layer stage__sky" aria-hidden="true"></div>
                 <div class="stage__layer stage__stars" aria-hidden="true"></div>
                 <div class="stage__layer stage__moon" aria-hidden="true"></div>
                 <div class="stage__layer stage__roof" aria-hidden="true"></div>
 
-                <!-- Creature -->
+                <!-- Creature (PNG placeholder) -->
                 <div class="creature-slot">
-                    <!-- Placeholder until PNGs exist -->
-                    <div class="creature-placeholder bob" aria-hidden="true">
-                        <span th:text="${gargoyle.type.name() == 'CHILD' ? 'CHILD' : 'ADULT'}">CHILD</span>
-                    </div>
-
-                    <!-- Later swap to:
                     <img class="creature-sprite bob"
-                         th:src="@{/images/gargoyle/baby.png}"
-                         alt="Your gargoyle"/>
-                    -->
+                         th:src="@{/images/gargoyle/gargoyle.png}"
+                         alt="Your gargoyle">
                 </div>
 
                 <!-- Overlays -->
@@ -419,5 +415,139 @@
     </div>
 
 </main>
+<script>
+    // ==========================================================
+    // Tama Gargoyles UI: Phase 1 (AJAX actions) + Phase 2 (polling)
+    // Goal: No full reloads + stats/overlays update over time.
+    // ==========================================================
+
+    const POLL_SECONDS = (() => {
+      const meta = document.querySelector('meta[name="tg-poll-seconds"]');
+      const s = meta ? Number(meta.content) : 15;
+      return Number.isFinite(s) && s > 0 ? s : 15;
+    })();
+
+    let pollTimer = null;
+    let pollInFlight = false;
+    let lastPollAt = 0;
+
+    function extractAndPatch(htmlText) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+
+      // Left stats panel
+      const newLeft = doc.querySelector(".hud-panel--left");
+      const oldLeft = document.querySelector(".hud-panel--left");
+      if (newLeft && oldLeft) oldLeft.replaceWith(newLeft);
+
+      // Right panel (tip + testing tools can change with testingMode)
+      const newRight = doc.querySelector(".hud-panel--right");
+      const oldRight = document.querySelector(".hud-panel--right");
+      if (newRight && oldRight) oldRight.replaceWith(newRight);
+
+      // Event log
+      const newLog = doc.querySelector(".log-panel");
+      const oldLog = document.querySelector(".log-panel");
+      if (newLog && oldLog) oldLog.replaceWith(newLog);
+
+      // Overlays only (don’t replace the stage)
+      const newStage = doc.querySelector(".stage");
+      const oldStage = document.querySelector(".stage");
+      if (newStage && oldStage) {
+        oldStage.querySelectorAll(".overlay").forEach(o => o.remove());
+        newStage.querySelectorAll(".overlay").forEach(o => oldStage.appendChild(o));
+      }
+
+      // Re-bind action forms because we replaced panels that contain forms
+      ajaxify();
+    }
+
+    async function fetchAndPatch() {
+      // Don’t spam; don’t overlap requests; don’t run when tab hidden
+      if (pollInFlight) return;
+      if (document.hidden) return;
+
+      pollInFlight = true;
+      lastPollAt = Date.now();
+
+      try {
+        const res = await fetch(window.location.href, {
+          headers: { "X-Requested-With": "fetch" }
+        });
+        if (!res.ok) throw new Error("poll GET failed");
+        const html = await res.text();
+        extractAndPatch(html);
+      } catch (e) {
+        // If polling fails occasionally, we just skip — no hard reload.
+        // (Keeps demo stable if a request hiccups.)
+      } finally {
+        pollInFlight = false;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      pollTimer = setInterval(fetchAndPatch, POLL_SECONDS * 1000);
+    }
+
+    function stopPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = null;
+    }
+
+    function ajaxify() {
+      const forms = document.querySelectorAll(
+        ".actions__icons form, .testing-buttons form, .testing-actions form"
+      );
+
+      forms.forEach((form) => {
+        if (form.dataset.ajaxBound === "true") return;
+        form.dataset.ajaxBound = "true";
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          try {
+            const formData = new FormData(form);
+
+            // POST the action
+            const postRes = await fetch(form.action, {
+              method: (form.method || "POST").toUpperCase(),
+              body: formData,
+              headers: { "X-Requested-With": "fetch" }
+            });
+
+            if (!postRes.ok) throw new Error("POST failed");
+
+            // Immediately sync UI from server HTML (single source of truth)
+            await fetchAndPatch();
+
+          } catch (err) {
+            // Safe fallback
+            window.location.reload();
+          }
+        });
+      });
+    }
+
+    // Pause polling when user isn’t looking, resume when they return
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        // Refresh once immediately on return so UI catches up fast
+        fetchAndPatch();
+        startPolling();
+      }
+    });
+
+    // Boot
+    ajaxify();
+    // Do one immediate sync, then start the loop
+    fetchAndPatch();
+    startPolling();
+</script>
+
+
 </body>
 </html>
