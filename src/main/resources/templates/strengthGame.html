@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Strength Mini Game</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .meter-container {
+            width: 40px;
+            height: 300px;
+            border: 2px solid #333;
+            margin: 20px auto;
+            position: relative;
+            background-color: #eee;
+        }
+
+        .meter-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background-color: green;
+            transition: height 0.1s linear;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 25px;
+        }
+
+                .control-btn {
+                    width: 80px;          /* smaller */
+                    height: 80px;
+                    font-size: 2rem;
+                    font-weight: bold;
+
+                    background: transparent;        /* no fill */
+                    color: #333;
+
+                    border: 3px solid #333;          /* stroke only */
+                    border-radius: 12px;
+
+                    touch-action: manipulation;
+                }
+
+        .control-btn:active {
+            border-color: #000;
+            color: #000;
+            transform: scale(0.95);          /* subtle feedback */
+        }
+
+        .instructions {
+            font-size: 1.1em;
+        }
+
+        .percentage-display {
+            font-size: 1.6rem;     /* bigger text */
+            font-weight: bold;
+            margin-top: 16px;      /* extra space above */
+            margin-bottom: 12px;  /* space before the meter */
+        }
+    </style>
+</head>
+<body>
+
+<h1>Build Your Strength!</h1>
+
+<p class="instructions">
+    To pass this test you need to fill up the strength-meter!
+    <br>
+    Press the buttons alternately until the meter is full
+    <br>
+    Keyboard: <strong>A</strong> / <strong>D</strong>
+    <br>
+    Touch-screen: Tap buttons
+</p>
+
+<div id="percentageDisplay" class="percentage-display">
+    0%
+</div>
+
+<div class="meter-container">
+    <div id="meterFill" class="meter-fill"></div>
+</div>
+
+<div class="controls">
+    <button class="control-btn" id="leftBtn">A</button>
+    <button class="control-btn" id="rightBtn">D</button>
+</div>
+
+<p id="status"></p>
+
+<script>
+    const MAX_STRENGTH = 100;
+    const INCREASE_AMOUNT = 3;
+    const DECREASE_RATE = 2;
+    const TICK_RATE = 100;
+    const MAX_INTERVAL = 400;
+
+    let strength = 0;
+    let lastInput = null;
+    let lastPressTime = 0;
+    let gameComplete = false;
+
+    const meterFill = document.getElementById("meterFill");
+    const statusText = document.getElementById("status");
+
+    const percentageDisplay = document.getElementById("percentageDisplay");
+
+function updateMeter() {
+    meterFill.style.height = strength + "%";
+    percentageDisplay.textContent = strength + "%";
+
+    if (strength > 70) {
+        meterFill.style.backgroundColor = "red";
+    } else if (strength > 40) {
+        meterFill.style.backgroundColor = "orange";
+    } else {
+        meterFill.style.backgroundColor = "green";
+    }
+}
+
+    function handleInput(input) {
+        if (gameComplete) return;
+        if (input === lastInput) return;
+
+        const now = Date.now();
+        if (lastPressTime !== 0 && now - lastPressTime > MAX_INTERVAL) {
+            lastInput = input;
+            lastPressTime = now;
+            return;
+        }
+
+        lastInput = input;
+        lastPressTime = now;
+
+        strength = Math.min(MAX_STRENGTH, strength + INCREASE_AMOUNT);
+        updateMeter();
+
+        if (strength >= MAX_STRENGTH) {
+            completeGame();
+        }
+    }
+
+    function completeGame() {
+        gameComplete = true;
+    strength = MAX_STRENGTH;
+    updateMeter();
+        statusText.textContent = "💪 Strength Maxed Out!";
+
+        /*
+        fetch("/minigame/strength/complete", {
+            method: "POST"
+        });
+        */
+    }
+
+    // Keyboard input
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "KeyA") {
+            handleInput("LEFT");
+        } else if (event.code === "KeyD") {
+            handleInput("RIGHT");
+        }
+    });
+
+    // Button input (touch + click safe)
+    document.getElementById("leftBtn")
+        .addEventListener("pointerdown", () => handleInput("LEFT"));
+
+    document.getElementById("rightBtn")
+        .addEventListener("pointerdown", () => handleInput("RIGHT"));
+
+    // Drain meter
+    setInterval(() => {
+        if (gameComplete) return;
+
+        if (strength > 0) {
+            strength = Math.max(0, strength - DECREASE_RATE);
+            updateMeter();
+        }
+    }, TICK_RATE);
+</script>
+
+</body>
+</html>
