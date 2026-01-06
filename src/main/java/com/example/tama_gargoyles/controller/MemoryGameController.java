@@ -1,4 +1,4 @@
-package com.example.tama_gargoyles.games;
+package com.example.tama_gargoyles.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @Controller
-@RequestMapping("/games/memoryGame")
+@RequestMapping("/minigame/memory")
 public class MemoryGameController {
 
     private static final String SESSION_KEY = "memoryGame";

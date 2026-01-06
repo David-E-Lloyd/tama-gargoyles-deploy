@@ -1,11 +1,11 @@
-package com.example.tama_gargoyles.games.model;
+package com.example.tama_gargoyles.model;
 
-public class Cell {
+public class MemoryGameCell {
     private String emoji;
     private boolean revealed;
     private boolean matched;
 
-    public Cell(String emoji) {
+    public MemoryGameCell(String emoji) {
         this.emoji = emoji;
         this.revealed = false;
         this.matched = false;

@@ -1,9 +1,9 @@
-package com.example.tama_gargoyles.games.model;
+package com.example.tama_gargoyles.model;
 
 import java.util.*;
 
 public class MemoryGame {
-    private Map<String, Cell> cellMap = new HashMap<>();
+    private Map<String, MemoryGameCell> cellMap = new HashMap<>();
     private long startTime;
 
     public MemoryGame() {
@@ -24,21 +24,21 @@ public class MemoryGame {
         int index = 0;
         for(String r : rows){
             for(int c = 1; c <= 4; c++){
-                Cell cell = new Cell(pairList.get(index++));
+                MemoryGameCell cell = new MemoryGameCell(pairList.get(index++));
                 cellMap.put(r+c, cell);
             }
         }
     }
 
-    public Cell reveal(String cellId){
-        Cell c = cellMap.get(cellId);
+    public MemoryGameCell reveal(String cellId){
+        MemoryGameCell c = cellMap.get(cellId);
         if(c != null) c.setRevealed(true);
         return c;
     }
 
     public boolean checkMatch(String firstId, String secondId){
-        Cell f = cellMap.get(firstId);
-        Cell s = cellMap.get(secondId);
+        MemoryGameCell f = cellMap.get(firstId);
+        MemoryGameCell s = cellMap.get(secondId);
         if(f != null && s != null && f.getEmoji().equals(s.getEmoji())){
             f.setMatched(true);
             s.setMatched(true);
@@ -48,7 +48,7 @@ public class MemoryGame {
     }
 
     public boolean allMatched(){
-        return cellMap.values().stream().allMatch(Cell::isMatched);
+        return cellMap.values().stream().allMatch(MemoryGameCell::isMatched);
     }
 
     public int calculateScore(){
@@ -56,7 +56,7 @@ public class MemoryGame {
         return (int)Math.max(0, 20 - elapsed/1000);
     }
 
-    public Map<String, Cell> getCellMap(){
+    public Map<String, MemoryGameCell> getCellMap(){
         return cellMap;
     }
 }
