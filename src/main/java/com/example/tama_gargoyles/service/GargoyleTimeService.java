@@ -28,7 +28,6 @@ public class GargoyleTimeService {
     public GargoyleTimeService(Clock clock) {
         this.clock = clock;
     }
-
     /**
      * ROCK-SOLID RULE:
      * - Call resume() BEFORE tick() when a user returns.
@@ -89,6 +88,10 @@ public class GargoyleTimeService {
         game.setHappiness(clamp01to100(game.getHappiness() - happinessDrop + happinessRaise));
         game.setHealth(clamp01to100(game.getHealth() - healthDrop + healthRaise));
 
+        // TODO: replace / 2 with MINUTES_PER_GAME_DAY
+        Integer updatedAge = (int) Math.floor((double) game.getActiveMinutes() / 2);
+
+        game.setAge(updatedAge);
         // Move time forward.
         game.setLastTickAt(now);
     }
