@@ -1,15 +1,5 @@
 /* src/main/resources/static/css/game.css */
 
-/* =========================================================
-   Tama Gargoyles — Haunted Arcade (Option A: real space image)
-   What this file does:
-   - Uses /images/space-bg.png as the main nebula/star background
-   - Optionally overlays /images/stars-fg.png as a sparkly star layer
-   - Keeps scanlines (on .screen::after so we don't overwrite stars)
-   - Keeps the current grid/panels/buttons/stats/actions styling
-   - Reduces "too purple" by leaning blue/cyan for surfaces + borders
-   ========================================================= */
-
 /* -------------------------
    IMPORTANT ASSET PATHS
    -------------------------
