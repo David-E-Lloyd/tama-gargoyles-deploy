@@ -88,57 +88,74 @@
                 survivalTime: survivalTime
             })
         }).finally(() => {
-            window.location.href = "/pong/pong-result?time=" + survivalTime;
+            // Updated to include gargoyleId
+            window.location.href = "/pong/pong-result?time=" + survivalTime + "&gargoyleId=" + [[${gargoyleId}]];
         });
     }
+
 
     function draw() {
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-        // Survival Time & Difficulty Scaling
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        survivalDisplay.textContent = "Survival Time: " + elapsed + "s";
+        // --- UPDATED TIME FORMATTING ---
+        const elapsedTotal = Math.floor((Date.now() - startTime) / 1000);
+        const mins = Math.floor(elapsedTotal / 60);
+        const secs = elapsedTotal % 60;
 
-        // Increase difficulty every 10 seconds
-        let currentSpeedBoost = 1 + (elapsed / 10);
+        // Create the string: "1 min 5 secs" or just "5 secs"
+        let timeString = "";
+        if (mins > 0) {
+            timeString = mins + " min " + secs + " secs";
+        } else {
+            timeString = secs + " secs";
+        }
+        survivalDisplay.textContent = "Survival Time: " + timeString;
+        // -------------------------------
+
+        // --- DIFFICULTY SCALING ---
+        let currentSpeedBoost = 1 + (elapsedTotal / 60);
+        if (currentSpeedBoost > 2.5) currentSpeedBoost = 2.5;
+
+        // Ball Movement
+        ballX += ballSpeedX > 0 ? 3 * currentSpeedBoost : -3 * currentSpeedBoost;
+        ballY += ballSpeedY > 0 ? 3 * currentSpeedBoost : -3 * currentSpeedBoost;
 
         // Draw Paddles
         ctx.fillStyle = "#0095DD";
-        ctx.fillRect(0, playerY, paddleWidth, paddleHeight); // Player (Left)
-        ctx.fillRect(WIDTH - paddleWidth, computerY, paddleWidth, paddleHeight); // AI (Right)
+        ctx.fillRect(0, playerY, paddleWidth, paddleHeight);
+        ctx.fillRect(WIDTH - paddleWidth, computerY, paddleWidth, paddleHeight);
 
         // Draw Ball
         ctx.beginPath();
         ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Ball Movement
-        ballX += ballSpeedX > 0 ? 3 * currentSpeedBoost : -3 * currentSpeedBoost;
-        ballY += ballSpeedY > 0 ? 3 * currentSpeedBoost : -3 * currentSpeedBoost;
-
         // Wall Bounce (Top/Bottom)
         if (ballY < 0 || ballY > HEIGHT) ballSpeedY = -ballSpeedY;
 
-        // AI Logic: Follows ball Y coordinate
+        // AI Logic (Unbeatable)
         computerY = ballY - (paddleHeight / 2);
-        if (computerY < 0) {
-            computerY = 0;
-        } else if (computerY > HEIGHT - paddleHeight) {
-            computerY = HEIGHT - paddleHeight;
-        }
+        if (computerY < 0) computerY = 0;
+        else if (computerY > HEIGHT - paddleHeight) computerY = HEIGHT - paddleHeight;
 
         // Player Movement
         if (upPressed && playerY > 0) playerY -= 7;
         if (downPressed && playerY < HEIGHT - paddleHeight) playerY += 7;
 
         // Collision Detection
-        if (ballX < paddleWidth) {
-            if (ballY > playerY && ballY < playerY + paddleHeight) ballSpeedX = -ballSpeedX;
-            else gameOver(); // Missed ball
+        if (ballX - ballRadius <= paddleWidth) {
+            if (ballY > playerY && ballY < playerY + paddleHeight) {
+                ballSpeedX = Math.abs(ballSpeedX);
+                ballX = paddleWidth + ballRadius;
+            } else if (ballX < 0) {
+                gameOver();
+                return; // Stop the animation loop on game over
+            }
         }
-        if (ballX > WIDTH - paddleWidth) {
-            if (ballY > computerY && ballY < computerY + paddleHeight) ballSpeedX = -ballSpeedX;
-            else ballSpeedX = -ballSpeedX; // AI missed, just bounce it back to keep game going
+
+        if (ballX + ballRadius >= WIDTH - paddleWidth) {
+            ballSpeedX = -Math.abs(ballSpeedX);
+            ballX = WIDTH - paddleWidth - ballRadius;
         }
 
         requestAnimationFrame(draw);
