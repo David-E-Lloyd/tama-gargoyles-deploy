@@ -321,7 +321,7 @@ public class GargoyleController {
 
 
         // backend name validation
-        if (name.isEmpty() || name.length() > 30){
+        if (name.isBlank() || name.length() > 30){
             return new RedirectView("/game/");
         }else{
             System.out.println(name.length());
