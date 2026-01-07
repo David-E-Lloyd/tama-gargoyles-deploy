@@ -60,62 +60,81 @@ public class GargoyleController {
 
     @PostMapping("/rocks-increase")
     public RedirectView increaseRocks(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
-                                      @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
-        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
-        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
-        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
-        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
-        gargoyleRepository.save(gargoyle);
+                                      @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId, @RequestParam Long userId){
+        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
+        User user = userRepository.findById(userId).get();
+        if (user.getRocks() > 0 && gargoyle.getHunger() < 100) {
+            gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+            gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+            gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+            gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
+            user.setRocks(user.getRocks()-1);
+            userRepository.save(user);
+            gargoyleRepository.save(gargoyle);
+        }
         return new RedirectView("/game");
     }
 
     @PostMapping("/bugs-increase")
     public RedirectView increaseBugs(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
-                                     @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
-        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
-        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
-        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
-        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
-        gargoyleRepository.save(gargoyle);
+                                     @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId, @RequestParam Long userId){
+        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
+        User user = userRepository.findById(userId).get();
+        if (user.getBugs() > 0 && gargoyle.getHunger() < 100) {
+            gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+            gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+            gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+            gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
+            user.setBugs(user.getBugs()-1);
+            userRepository.save(user);
+            gargoyleRepository.save(gargoyle);
+        }
         return new RedirectView("/game");
     }
 
     @PostMapping("/fruits-increase")
     public RedirectView increaseFruits(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
-                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
-        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-        gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
-        gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
-        gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
-        gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
-        gargoyleRepository.save(gargoyle);
+                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId, @RequestParam Long userId){
+        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
+        User user = userRepository.findById(userId).get();
+        if (user.getFruits() > 0 && gargoyle.getHunger() < 100) {
+            gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
+            gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
+            gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
+            gargoyle.setHunger(Math.max(0, Math.min(gargoyle.getHunger() + hungerDelta, 100)));
+            user.setFruits(user.getFruits()-1);
+            userRepository.save(user);
+            gargoyleRepository.save(gargoyle);
+        }
         return new RedirectView("/game");
     }
-
     @PostMapping("/mystery-increase")
-    public RedirectView increaseMystery(@RequestParam Long gargoyleId){
+    public RedirectView increaseMystery(@RequestParam Long gargoyleId, @RequestParam Long userId){
         Random randomNum = new Random();
         int toIncrease = randomNum.nextInt(3);
-        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-
-        if (toIncrease == 0){
-            gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + randomNum.nextInt(1, 25), 100)));
-            gargoyle.setSpeed(Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0)));
-            gargoyle.setIntelligence(Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0)));
-        } else if (toIncrease == 1){
-            gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + randomNum.nextInt(7, 25), 100)));
-            gargoyle.setStrength(Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0)));
-            gargoyle.setIntelligence(Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0)));
-        } else {
-            gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + randomNum.nextInt(1, 25), 100)));
-            gargoyle.setSpeed(Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0)));
-            gargoyle.setStrength(Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0)));
+        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
+        User user = userRepository.findById(userId).get();
+        if (user.getMysteryFood() > 0 && gargoyle.getHunger() < 100) {
+            if (toIncrease == 0){
+                gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + randomNum.nextInt(1, 25), 100)));
+                gargoyle.setSpeed((Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0))));
+                gargoyle.setIntelligence((Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0))));
+            }
+            else if (toIncrease == 1){
+                gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + randomNum.nextInt(7, 25), 100)));
+                gargoyle.setStrength((Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0))));
+                gargoyle.setIntelligence((Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0))));
+            }
+            else{
+                gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + randomNum.nextInt(1, 25), 100)));
+                gargoyle.setSpeed((Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0))));
+                gargoyle.setStrength((Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0))));
+            }
+            gargoyle.setHunger(100);
+            user.setMysteryFood(Math.max(user.getMysteryFood()-1, 0));
+            userRepository.save(user);
+            gargoyleRepository.save(gargoyle);
         }
-
-        gargoyle.setHunger(100);
-        gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
 
