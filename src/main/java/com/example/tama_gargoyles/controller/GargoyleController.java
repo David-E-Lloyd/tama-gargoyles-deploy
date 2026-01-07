@@ -5,15 +5,16 @@ import com.example.tama_gargoyles.model.User;
 import com.example.tama_gargoyles.repository.GargoyleRepository;
 import com.example.tama_gargoyles.repository.UserRepository;
 import com.example.tama_gargoyles.service.CurrentUserService;
+import com.example.tama_gargoyles.service.EvolutionService;
 import com.example.tama_gargoyles.service.GargoyleTimeService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
-import org.springframework.security.core.Authentication;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +26,7 @@ public class GargoyleController {
     private final GargoyleRepository gargoyleRepository;
     private final CurrentUserService currentUserService;
     private final GargoyleTimeService timeService;
-
-    private static final long ADULT_AT_GAME_DAYS = 3;
+    private final EvolutionService evolutionService;
 
     @Autowired
     private UserRepository userRepository;
@@ -39,11 +39,11 @@ public class GargoyleController {
         this.gargoyleRepository = gargoyleRepository;
         this.currentUserService = currentUserService;
         this.timeService = timeService;
+        this.evolutionService = new EvolutionService();
     }
 
     // ----------------------------------------------------------
-    // Testing Mode Toggle (FIXES WHITELABEL)
-    // Stored in session so it’s per-user and survives refresh.
+    // Testing Mode Toggle (stored in session; per-user; survives refresh)
     // ----------------------------------------------------------
     @PostMapping("/testing-mode/toggle")
     public RedirectView toggleTestingMode(
@@ -58,15 +58,9 @@ public class GargoyleController {
         return new RedirectView(target);
     }
 
-    // -------------------
-    // FEED ACTIONS
-    // -------------------
     @PostMapping("/rocks-increase")
-    public RedirectView increaseRocks(@RequestParam Integer strengthDelta,
-                                      @RequestParam Integer speedDelta,
-                                      @RequestParam Integer intelligenceDelta,
-                                      @RequestParam Integer hungerDelta,
-                                      @RequestParam Long gargoyleId) {
+    public RedirectView increaseRocks(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                      @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -77,11 +71,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/bugs-increase")
-    public RedirectView increaseBugs(@RequestParam Integer strengthDelta,
-                                     @RequestParam Integer speedDelta,
-                                     @RequestParam Integer intelligenceDelta,
-                                     @RequestParam Integer hungerDelta,
-                                     @RequestParam Long gargoyleId) {
+    public RedirectView increaseBugs(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                     @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -92,11 +83,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/fruits-increase")
-    public RedirectView increaseFruits(@RequestParam Integer strengthDelta,
-                                       @RequestParam Integer speedDelta,
-                                       @RequestParam Integer intelligenceDelta,
-                                       @RequestParam Integer hungerDelta,
-                                       @RequestParam Long gargoyleId) {
+    public RedirectView increaseFruits(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                       @RequestParam Integer intelligenceDelta, @RequestParam Integer hungerDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -106,19 +94,17 @@ public class GargoyleController {
         return new RedirectView("/game");
     }
 
-    // Randomised "mystery" feed (ignores deltas from thymeleaf)
     @PostMapping("/mystery-increase")
-    public RedirectView increaseMystery(@RequestParam Long gargoyleId) {
+    public RedirectView increaseMystery(@RequestParam Long gargoyleId){
         Random randomNum = new Random();
         int toIncrease = randomNum.nextInt(3);
-
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
 
-        if (toIncrease == 0) {
+        if (toIncrease == 0){
             gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + randomNum.nextInt(1, 25), 100)));
             gargoyle.setSpeed(Math.min(100, Math.max(gargoyle.getSpeed() - randomNum.nextInt(1, 7), 0)));
             gargoyle.setIntelligence(Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0)));
-        } else if (toIncrease == 1) {
+        } else if (toIncrease == 1){
             gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + randomNum.nextInt(7, 25), 100)));
             gargoyle.setStrength(Math.min(100, Math.max(gargoyle.getStrength() - randomNum.nextInt(1, 7), 0)));
             gargoyle.setIntelligence(Math.min(100, Math.max(gargoyle.getIntelligence() - randomNum.nextInt(1, 7), 0)));
@@ -133,15 +119,9 @@ public class GargoyleController {
         return new RedirectView("/game");
     }
 
-    // -------------------
-    // PLAY ACTIONS
-    // -------------------
     @PostMapping("/strength-increase")
-    public RedirectView increaseStrength(@RequestParam Integer strengthDelta,
-                                         @RequestParam Integer speedDelta,
-                                         @RequestParam Integer intelligenceDelta,
-                                         @RequestParam Integer happinessDelta,
-                                         @RequestParam Long gargoyleId) {
+    public RedirectView increaseStrength(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                         @RequestParam Integer intelligenceDelta, @RequestParam Integer happinessDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -152,11 +132,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/speed-increase")
-    public RedirectView increaseSpeed(@RequestParam Integer strengthDelta,
-                                      @RequestParam Integer speedDelta,
-                                      @RequestParam Integer intelligenceDelta,
-                                      @RequestParam Integer happinessDelta,
-                                      @RequestParam Long gargoyleId) {
+    public RedirectView increaseSpeed(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                      @RequestParam Integer intelligenceDelta, @RequestParam Integer happinessDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -167,11 +144,8 @@ public class GargoyleController {
     }
 
     @PostMapping("/intelligence-increase")
-    public RedirectView increaseIntelligence(@RequestParam Integer strengthDelta,
-                                             @RequestParam Integer speedDelta,
-                                             @RequestParam Integer intelligenceDelta,
-                                             @RequestParam Integer happinessDelta,
-                                             @RequestParam Long gargoyleId) {
+    public RedirectView increaseIntelligence(@RequestParam Integer strengthDelta, @RequestParam Integer speedDelta,
+                                             @RequestParam Integer intelligenceDelta, @RequestParam Integer happinessDelta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setStrength(Math.max(0, Math.min(gargoyle.getStrength() + strengthDelta, 100)));
         gargoyle.setSpeed(Math.max(0, Math.min(gargoyle.getSpeed() + speedDelta, 100)));
@@ -181,11 +155,8 @@ public class GargoyleController {
         return new RedirectView("/game");
     }
 
-    // -------------------
-    // TESTING ACTIONS
-    // -------------------
     @PostMapping("/hunger-increase")
-    public RedirectView increaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId) {
+    public RedirectView increaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHunger(Math.min(gargoyle.getHunger() + delta, 100));
         gargoyleRepository.save(gargoyle);
@@ -193,7 +164,7 @@ public class GargoyleController {
     }
 
     @PostMapping("/entertainment-increase")
-    public RedirectView increaseHappiness(@RequestParam Integer delta, @RequestParam Long gargoyleId) {
+    public RedirectView increaseHappiness(@RequestParam Integer delta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHappiness(Math.min(gargoyle.getHappiness() + delta, 100));
         gargoyleRepository.save(gargoyle);
@@ -201,24 +172,21 @@ public class GargoyleController {
     }
 
     @PostMapping("/entertainment-decrease")
-    public RedirectView decreaseHappiness(@RequestParam Integer delta, @RequestParam Long gargoyleId) {
+    public RedirectView decreaseHappiness(@RequestParam Integer delta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-        gargoyle.setHappiness(Math.max(gargoyle.getHappiness() - delta, 0));
+        gargoyle.setHappiness(Math.max(0, gargoyle.getHappiness() - delta));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
 
     @PostMapping("/hunger-decrease")
-    public RedirectView decreaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId) {
+    public RedirectView decreaseHunger(@RequestParam Integer delta, @RequestParam Long gargoyleId){
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
-        gargoyle.setHunger(Math.max(gargoyle.getHunger() - delta, 0));
+        gargoyle.setHunger(Math.max(0, gargoyle.getHunger() - delta));
         gargoyleRepository.save(gargoyle);
         return new RedirectView("/game");
     }
 
-    // -------------------
-    // GAME PAGE
-    // -------------------
     @GetMapping("/game")
     public String game(Model model, Authentication authentication, HttpSession session) {
         User user = currentUserService.getCurrentUser(authentication);
@@ -240,14 +208,7 @@ public class GargoyleController {
         timeService.resume(g);
         timeService.tick(g);
 
-        long daysOld = timeService.gameDaysOld(g);
-        boolean isOldEnough = daysOld >= ADULT_AT_GAME_DAYS;
-
-        if (g.getType() == Gargoyle.Type.CHILD && isOldEnough) {
-            boolean treatedWell = g.getHappiness() >= 60 && g.getHunger() >= 60;
-            g.setType(treatedWell ? Gargoyle.Type.GOOD : Gargoyle.Type.BAD);
-        }
-
+        boolean evolved = evolutionService.evolveGargoyle(g);
         gargoyleRepository.save(g);
 
         Boolean testingMode = (Boolean) session.getAttribute("testingMode");
@@ -257,6 +218,7 @@ public class GargoyleController {
         model.addAttribute("gameDaysOld", timeService.gameDaysOld(g));
         model.addAttribute("minutesIntoDay", timeService.minutesIntoCurrentDay(g));
 
+        if (evolved) return "gargoyles/evolution";
         return "game";
     }
 
@@ -287,14 +249,13 @@ public class GargoyleController {
 
         Gargoyle gargoyle = gargoyleRepository.findById(id).orElseThrow();
 
-        // Optional safety: ensure ownership
+        // Ownership check (keep)
         if (!gargoyle.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }
 
         timeService.resume(gargoyle);
         timeService.tick(gargoyle);
-
         gargoyleRepository.save(gargoyle);
 
         Boolean testingMode = (Boolean) session.getAttribute("testingMode");
@@ -307,9 +268,6 @@ public class GargoyleController {
         return "game";
     }
 
-    // -------------------
-    // LIST / CRUD SCREENS
-    // -------------------
     @GetMapping("/gargoyles")
     public ModelAndView allGargoyles(Authentication authentication) {
         User user = currentUserService.getCurrentUser(authentication);
@@ -325,8 +283,6 @@ public class GargoyleController {
 
     @GetMapping("/gargoyles/new")
     public ModelAndView newGargoyleForm(Authentication authentication) {
-        User user = currentUserService.getCurrentUser(authentication);
-
         Gargoyle gargoyle = new Gargoyle();
         ModelAndView newGargoyleForm = new ModelAndView("gargoyles/new");
         newGargoyleForm.addObject("gargoyle", gargoyle);
@@ -338,7 +294,7 @@ public class GargoyleController {
         User user = currentUserService.getCurrentUser(authentication);
         gargoyle.setUser(user);
 
-        if (gargoyle.getName().isEmpty() || gargoyle.getName().length() > 30) {
+        if (gargoyle.getName().isBlank() || gargoyle.getName().length() > 30) {
             return new RedirectView("/gargoyles");
         }
 
@@ -356,7 +312,7 @@ public class GargoyleController {
     public RedirectView renameGargoyle(@PathVariable Long id, @RequestParam String name) {
         Gargoyle gargoyle = gargoyleRepository.findById(id).orElseThrow();
 
-        if (name.isEmpty() || name.length() > 30) {
+        if (name.isBlank() || name.length() > 30) {
             return new RedirectView("/game/");
         }
 
@@ -365,9 +321,6 @@ public class GargoyleController {
         return new RedirectView("/game/" + saved.getId());
     }
 
-    // ----------------------------------------------------------
-    // Live stats endpoint (you already had this)
-    // ----------------------------------------------------------
     @GetMapping("/game/stats/{id}")
     @ResponseBody
     public Map<String, Object> getLiveStats(@PathVariable Long id, Authentication authentication) {
