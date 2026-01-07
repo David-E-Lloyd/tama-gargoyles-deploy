@@ -62,6 +62,7 @@ public class BattleController {
             return "redirect:/game";
         }
 
+        // Pick an adult-eligible gargoyle
         Gargoyle battler = gargoyles.stream()
                 .filter(this::isBattleEligible)
                 .findFirst()
@@ -70,11 +71,17 @@ public class BattleController {
         if (battler == null) {
             redirectAttributes.addFlashAttribute(
                     "battleError",
-                    "Your gargoyle must be an adult to enter battle. Keep playing to grow up!"
+                    "Your gargoyle must an adult to enter battle. Keep playing to grow up!"
             );
             return "redirect:/game";
         }
 
+        // ✅ Reset battle state if previous game was finished
+        if (state.isFinished()) {
+            state.reset();
+        }
+
+        // Keep time consistent
         timeService.resume(battler);
         timeService.tick(battler);
         gargoyleRepository.save(battler);
@@ -82,6 +89,7 @@ public class BattleController {
         model.addAttribute("gargoyle", battler);
         model.addAttribute("state", state);
         model.addAttribute("winnerText", state.winnerText());
+
         model.addAttribute("gameDaysOld", timeService.gameDaysOld(battler));
         model.addAttribute("adultAtDays", ADULT_AT_GAME_DAYS);
 
