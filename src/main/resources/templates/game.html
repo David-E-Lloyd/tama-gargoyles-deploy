@@ -342,19 +342,17 @@
                     <p class="actions__sub">Mini-games boost happiness (and sometimes stats!)</p>
 
                     <div class="actions__icons" role="group" aria-label="Play options">
-                        <form action="/strength-increase" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="gargoyleId" th:value="${gargoyle.id}"/>
-                            <input type="hidden" name="strengthDelta" value="10"/>
-                            <input type="hidden" name="speedDelta" value="0"/>
-                            <input type="hidden" name="intelligenceDelta" value="0"/>
-                            <input type="hidden" name="happinessDelta" value="10"/>
-                            <button class="icon-btn icon-btn--play" type="submit" title="Strength Game: +Strength" aria-label="Play Strength game">
+                        <div class="action-item">
+                            <button class="icon-btn icon-btn--play"
+                                    type="button"
+                                    th:onclick="|window.location.href='@{/minigame/strength(gargoyleId=${gargoyle.id})}'|"
+                                    title="Strength Game: +Strength"
+                                    aria-label="Play Strength game">
                                 <span class="icon" aria-hidden="true">💪</span>
                                 <span class="sr-only">Strength</span>
                             </button>
                             <div class="icon-label" aria-hidden="true">Strength</div>
-                        </form>
+                        </div>
 
                         <div class="action-item">
                             <button class="icon-btn icon-btn--play"
@@ -368,19 +366,16 @@
                             <div class="icon-label" aria-hidden="true">Speed</div>
                         </div>
 
-                        <form action="/intelligence-increase" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="gargoyleId" th:value="${gargoyle.id}"/>
-                            <input type="hidden" name="strengthDelta" value="0"/>
-                            <input type="hidden" name="speedDelta" value="0"/>
-                            <input type="hidden" name="intelligenceDelta" value="10"/>
-                            <input type="hidden" name="happinessDelta" value="10"/>
-                            <button class="icon-btn icon-btn--play" type="submit" title="Brains Game: +Intelligence" aria-label="Play Brains game">
+                        <div class="action-item">
+                            <button class="icon-btn icon-btn--play"
+                                    type="button"
+                                    th:onclick="|window.location.href='@{/minigame/memory(gargoyleId=${gargoyle.id})}'|"
+                                    title="Play Memory Game: +Intelligence"
+                                    aria-label="Play Memory Game">
                                 <span class="icon" aria-hidden="true">🧠</span>
-                                <span class="sr-only">Brains</span>
                             </button>
-                            <div class="icon-label" aria-hidden="true">Brains</div>
-                        </form>
+                            <div class="icon-label" aria-hidden="true">Memory</div>
+                        </div>
                     </div>
                 </div>
 
