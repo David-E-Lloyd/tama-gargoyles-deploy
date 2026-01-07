@@ -534,6 +534,16 @@
       }
     });
 
+    window.onbeforeunload = function() {
+        const token = "[[${_csrf.token}]]";
+        const paramName = "[[${_csrf.parameterName}]]";
+
+        const params = new URLSearchParams();
+        params.append(paramName, token);
+        navigator.sendBeacon("/gargoyles/pause", params);
+    };
+
+    // Boot
     ajaxify();
     fetchAndPatch();
     startPolling();
