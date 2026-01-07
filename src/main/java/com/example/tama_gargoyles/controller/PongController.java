@@ -78,7 +78,11 @@ public class PongController {
             user.setBugs(user.getBugs() + 1);
         }
 
+        Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).get();
+        gargoyle.setHappiness(Math.min(100, gargoyle.getHappiness() + 20));
+
         // Save the User inventory changes
+        gargoyleRepository.save(gargoyle);
         userRepository.save(user);
 
         // Pass variables to pong-result.html
