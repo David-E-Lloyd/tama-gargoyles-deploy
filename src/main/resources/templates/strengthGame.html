@@ -139,9 +139,10 @@
     let lastInput = null;
     let lastPressTime = 0;
     let gameComplete = false;
+    let running = false;
 
     // Time variables
-    const startTime = Date.now();
+    startTime = Date.now();
     const timerDisplay = document.getElementById("timerDisplay");
     const meterFill = document.getElementById("meterFill");
     const statusText = document.getElementById("status");
@@ -169,7 +170,18 @@
     }
 
     function handleInput(input) {
-        if (gameComplete) return;
+        if (gameComplete);
+        if (!running){
+            running = true;
+            startTime = Date.now();
+            setInterval(() => {
+                if (gameComplete) return;
+                if (strength > 0) {
+                    strength = Math.max(0, strength - DECREASE_RATE);
+                }
+                updateUI();
+            }, TICK_RATE);
+        }
         if (input === lastInput) return; // Must alternate buttons
 
         const now = Date.now();
@@ -219,15 +231,6 @@
 
     document.getElementById("leftBtn").addEventListener("pointerdown", () => handleInput("LEFT"));
     document.getElementById("rightBtn").addEventListener("pointerdown", () => handleInput("RIGHT"));
-
-    // Gravity: Meter drains over time
-    setInterval(() => {
-        if (gameComplete) return;
-        if (strength > 0) {
-            strength = Math.max(0, strength - DECREASE_RATE);
-        }
-        updateUI();
-    }, TICK_RATE);
 </script>
 
 </body>
