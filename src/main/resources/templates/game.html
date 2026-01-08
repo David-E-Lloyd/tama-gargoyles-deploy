@@ -200,11 +200,19 @@
                         <img class="nest-sprite" th:src="@{/images/scene/nest.png}" alt="">
                     </div>
 
-                    <!-- Creature -->
-                    <img class="creature-sprite bob"
-                         th:src="@{${image_path}}"
-                         alt="Your gargoyle">
+                    <!-- Creature bob wrapper (bob goes here, NOT on the img) -->
+                    <div class="creature-bob bob">
+                        <img class="creature-sprite"
+                             th:src="${image_path}"
+                             th:classappend="${gargoyle.age < 1} ? ' creature--egg'
+           : (${gargoyle.age < 2} ? ' creature--baby'
+           : (${gargoyle.age < 3} ? ' creature--child'
+           : ' creature--adult'))"
+                             alt="Your gargoyle">
+                    </div>
+
                 </div>
+
 
                 <!-- Overlays -->
                 <p class="overlay overlay--left" th:if="${gargoyle.hunger < 50}">

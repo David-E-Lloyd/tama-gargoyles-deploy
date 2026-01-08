@@ -62,7 +62,7 @@ public class EvolutionService {
         }else if(g.getType() == Gargoyle.Type.GOOD && Objects.equals(g.getEvolutionType(), "Speed")){
             return "/images/gargoyle/Good-Speed-The-Skyrunner.png";
         }else{
-            return "/images/gargoyle/adult-with-base.png";
+            return "/images/gargoyle/happy-neutral-adult.png";
         }
 
     }
