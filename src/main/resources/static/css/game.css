@@ -614,7 +614,8 @@ body::before{
 
 /* Creature */
 .creature-sprite{
-  width: min(260px, 62%);
+  width: 220px;          /* fixed baby size */
+  max-width: 70%;        /* still safe on small screens */
   height: auto;
   display: block;
   user-select: none;
@@ -628,6 +629,7 @@ body::before{
     drop-shadow(0 18px 28px rgba(0,0,0,0.55))
     drop-shadow(0 0 18px rgba(155,92,255,0.18));
 }
+
 
 /* Nest wrapper (child only) — we position THIS, not the img */
 .nest-wrap{
