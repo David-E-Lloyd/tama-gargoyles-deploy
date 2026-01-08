@@ -89,13 +89,19 @@
     let upPressed = false;
     let downPressed = false;
     document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowUp") upPressed = true;
-        if (e.key === "ArrowDown") downPressed = true;
-    });
-    document.addEventListener("keyup", (e) => {
-        if (e.key === "ArrowUp") upPressed = false;
-        if (e.key === "ArrowDown") downPressed = false;
-    });
+        if (e.key === "ArrowUp") {
+            e.preventDefault();   // Prevent page scrolling
+            upPressed = true;
+        }
+        if (e.key === "ArrowDown") {
+            e.preventDefault();   // Prevent page scrolling
+            downPressed = true;
+        }
+});
+document.addEventListener("keyup", (e) => {
+    if (e.key === "ArrowUp") upPressed = false;
+    if (e.key === "ArrowDown") downPressed = false;
+});
 
     // Cancel button
     document.getElementById("cancelBtn").addEventListener("click", () => {
