@@ -185,8 +185,13 @@
         <section class="stage-panel panel" aria-labelledby="creature-area-title">
             <h2 id="creature-area-title" class="sr-only">Creature</h2>
 
-            <div class="stage" role="img" aria-label="Gargoyle on a church roof under a starry sky">
-                <!-- Parallax layers -->
+            <div class="stage"
+                 th:attr="data-life=${lifeStage}"
+                 role="img"
+                 aria-label="Gargoyle on a church roof under a starry sky">
+
+
+            <!-- Parallax layers -->
                 <div class="stage__layer stage__sky" aria-hidden="true"></div>
                 <div class="stage__layer stage__stars" aria-hidden="true"></div>
                 <div class="stage__layer stage__moon" aria-hidden="true"></div>
@@ -200,11 +205,19 @@
                         <img class="nest-sprite" th:src="@{/images/scene/nest.png}" alt="">
                     </div>
 
-                    <!-- Creature -->
-                    <img class="creature-sprite bob"
-                         th:src="@{${image_path}}"
-                         alt="Your gargoyle">
+                    <!-- Creature bob wrapper (bob goes here, NOT on the img) -->
+                    <div class="creature-bob bob">
+                        <img class="creature-sprite"
+                             th:src="${image_path}"
+                             th:classappend="${gargoyle.age < 1} ? ' creature--egg'
+           : (${gargoyle.age < 2} ? ' creature--baby'
+           : (${gargoyle.age < 3} ? ' creature--child'
+           : ' creature--adult'))"
+                             alt="Your gargoyle">
+                    </div>
+
                 </div>
+
 
                 <!-- Overlays -->
                 <p class="overlay overlay--left" th:if="${gargoyle.hunger < 50}">

@@ -41,6 +41,16 @@ public class EvolutionService {
         return false;
     }
 
+    public String getLifeStage(Gargoyle g) {
+        int age = g.getAge();
+
+        if (age < 1) return "egg";
+        if (age < 2) return "baby";
+        if (age < 3) return "child";
+        return "adult";
+    }
+
+
     public String getGargoyleImagePath(Gargoyle g){
 
         if (g.getAge() < 1){
@@ -62,7 +72,7 @@ public class EvolutionService {
         }else if(g.getType() == Gargoyle.Type.GOOD && Objects.equals(g.getEvolutionType(), "Speed")){
             return "/images/gargoyle/Good-Speed-The-Skyrunner.png";
         }else{
-            return "/images/gargoyle/adult-with-base.png";
+            return "/images/gargoyle/happy-neutral-adult.png";
         }
 
     }

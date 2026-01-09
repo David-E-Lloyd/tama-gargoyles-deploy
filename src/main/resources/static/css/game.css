@@ -595,11 +595,16 @@ body::before{
 
 
 /* =========================================================
-   CREATURE + NEST (CHILD ONLY) — CLEAN + ALIGNED
-   Paste this where your current creature/nest section is.
+   CREATURE + NEST (CHILD ONLY) — stage-calibrated
    ========================================================= */
 
-/* Container that centers the creature stack */
+/* Put defaults on the STAGE (so data-life overrides are guaranteed) */
+.stage{
+  --creature-w: 220px;   /* base size */
+  --creature-x: 182px;   /* your current working default */
+  --creature-y: -90px;   /* your current working default */
+}
+
 .creature-slot{
   position: absolute;
   inset: 0;
@@ -607,55 +612,78 @@ body::before{
   place-items: center;
   z-index: 5;
   pointer-events: none;
-
-  /* lifts whole stack a bit so it sits on the roof nicely */
-  padding-bottom: 40px; /* tweak 20–70 */
 }
 
-/* Creature */
+/* Life-stage tuning */
+.stage[data-life="egg"]{
+  --creature-w: 220px;   /* egg = baby size */
+  --creature-x: 182px;
+  --creature-y: -90px;
+}
+
+.stage[data-life="baby"]{
+  --creature-w: 220px;
+  --creature-x: 182px;
+  --creature-y: -90px;
+}
+
+/* CHILD SHOULD BE ON THE GROUND (no nest) */
+.stage[data-life="child"]{
+  --creature-w: 320px;   /* pick a sensible starting size, not 500 */
+  --creature-x: 0px;
+  --creature-y: 70px;    /* pushes it down onto the “ground/roof line” */
+}
+
+/* ADULT */
+.stage[data-life="adult"]{
+  --creature-w: 360px;
+  --creature-x: 0px;
+  --creature-y: 20px;    /* usually lower than baby so it feels heavier */
+}
+
+/* Debug outlines (temp)
+.stage[data-life="egg"] { outline: 2px solid red; }
+.stage[data-life="baby"] { outline: 2px solid green; }
+.stage[data-life="child"] { outline: 2px solid yellow; }
+.stage[data-life="adult"] { outline: 2px solid cyan; } */
+
+/* Creature sprite */
 .creature-sprite{
-  width: 220px;          /* fixed baby size */
-  max-width: 70%;        /* still safe on small screens */
+  width: min(var(--creature-w), 70%);
   height: auto;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
 
-  position: relative;
-  z-index: 6; /* above nest */
+  position: relative; /* enables top/left nudges */
+  left: var(--creature-x);
+  top:  var(--creature-y);
 
-  /* IMPORTANT: don't set transform here (bob animation uses transform) */
+  z-index: 6;
   filter:
     drop-shadow(0 18px 28px rgba(0,0,0,0.55))
     drop-shadow(0 0 18px rgba(155,92,255,0.18));
 }
 
-
-/* Nest wrapper (child only) — we position THIS, not the img */
+/* Nest wrapper (CHILD only in HTML) */
 .nest-wrap{
   position: absolute;
   left: 50%;
-
-  /* Put nest under the baby, not behind its head */
-  bottom: 1%;            /* tweak 2–10% */
+  bottom: 1%;
   transform: translateX(-50%);
-
-  width: min(320px, 74%); /* tweak 260–380px or % */
+  width: min(360px, 82%);
+  z-index: 0;
   display: grid;
   place-items: center;
 
-  z-index: 4;            /* behind creature */
-  pointer-events: none;
-
-  animation: nest-float 6.2s ease-in-out infinite;
-  will-change: transform, opacity, filter;
-
   filter:
-    drop-shadow(0 24px 28px rgba(0,0,0,0.55))
-    drop-shadow(0 0 26px rgba(36,214,255,0.14));
+    drop-shadow(0 26px 30px rgba(0,0,0,0.55))
+    drop-shadow(0 0 22px rgba(36,214,255,0.14));
+
+  animation: nest-float 5.2s ease-in-out infinite;
+  will-change: transform, opacity, filter;
 }
 
-/* Nest image */
 .nest-sprite{
   width: 100%;
   height: auto;
@@ -666,28 +694,27 @@ body::before{
   pointer-events: none;
 }
 
-/* Aura ring UNDER the nest */
+/* Aura + sparkles stay on wrapper (works, because wrapper is a DIV) */
 .nest-wrap::after{
   content:"";
   position:absolute;
   left: 50%;
-  bottom: -10%;
-  width: 72%;
-  height: 22%;
+  bottom: -8%;
+  width: 68%;
+  height: 18%;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: radial-gradient(closest-side, rgba(155,92,255,0.38), transparent 72%);
-  filter: blur(10px);
+  background: radial-gradient(closest-side, rgba(155,92,255,0.35), transparent 70%);
+  filter: blur(8px);
   opacity: 0.75;
-  animation: aura-pulse 3.8s ease-in-out infinite;
+  animation: aura-pulse 3.6s ease-in-out infinite;
   pointer-events:none;
 }
 
-/* Sparkle dust around the nest */
 .nest-wrap::before{
   content:"";
   position:absolute;
-  inset: -22% -26%;
+  inset: -18% -22%;
   background:
     radial-gradient(circle at 18% 62%, rgba(255,255,255,0.55) 0 1px, transparent 3px),
     radial-gradient(circle at 34% 48%, rgba(36,214,255,0.45) 0 1px, transparent 3px),
@@ -700,27 +727,17 @@ body::before{
   pointer-events:none;
 }
 
-/* Optional: tiny "magic lift" WITHOUT fighting bob
-   (we use margin, not transform) */
-.stage .creature-slot .creature-sprite{
-  top: -55px; /* tweak raise creature height*/
-  margin-bottom: 5px; /* tweak 0–24 */
-}
-
-/* Animations */
 @keyframes nest-float{
-  0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.95; }
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.95; }
   50%      { transform: translateX(-50%) translateY(-6px); opacity: 1; }
 }
-
 @keyframes aura-pulse{
-  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.60; }
-  50%      { transform: translateX(-50%) scale(1.10); opacity: 0.88; }
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.60; }
+  50%      { transform: translateX(-50%) scale(1.08); opacity: 0.85; }
 }
-
 @keyframes spark-drift{
-  0%, 100% { transform: translateY(2px);  opacity: 0.22; }
-  50%      { transform: translateY(-7px); opacity: 0.45; }
+  0%, 100% { transform: translateY(2px); opacity: 0.25; }
+  50%      { transform: translateY(-6px); opacity: 0.45; }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -730,6 +747,7 @@ body::before{
     animation:none;
   }
 }
+
 
 
 /* overlays above everything */
