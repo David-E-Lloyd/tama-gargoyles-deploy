@@ -16,5 +16,41 @@
 </form>
 <br><br>
 <a href="/">Back</a>
+<div>
+    <!-- Music Toggle Icon -->
+    <button
+            id="music-toggle"
+            onclick="toggleMusic()"
+            aria-label="Toggle background music"
+            style="font-size: 1.5rem; background: none; border: none; cursor: pointer;">
+        🔇
+    </button>
+
+    <audio id="bg-music" loop>
+        <source th:src="@{/audio/music/egg.mp3}" type="audio/mpeg">
+    </audio>
+
+    <script>
+        function toggleMusic() {
+            const music = document.getElementById("bg-music");
+            const button = document.getElementById("music-toggle");
+
+            if (!music) return;
+
+            music.volume = 0.3;
+
+            if (music.paused) {
+                music.play();
+                button.textContent = "🎵";
+                button.setAttribute("aria-label", "Stop background music");
+            } else {
+                music.pause();
+                music.currentTime = 0;
+                button.textContent = "🔇";
+                button.setAttribute("aria-label", "Play background music");
+            }
+        }
+    </script>
+</div>
 </body>
 </html>
