@@ -95,7 +95,7 @@ public class GargoyleController {
             userRepository.save(user);
             gargoyleRepository.save(gargoyle);
         }
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/bugs-increase")
@@ -113,7 +113,7 @@ public class GargoyleController {
             userRepository.save(user);
             gargoyleRepository.save(gargoyle);
         }
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/fruits-increase")
@@ -131,7 +131,7 @@ public class GargoyleController {
             userRepository.save(user);
             gargoyleRepository.save(gargoyle);
         }
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/mystery-increase")
@@ -161,7 +161,7 @@ public class GargoyleController {
             userRepository.save(user);
             gargoyleRepository.save(gargoyle);
         }
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/strength-increase")
@@ -187,7 +187,7 @@ public class GargoyleController {
         gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
         gargoyle.setHappiness(Math.max(0, Math.min(gargoyle.getHappiness() + happinessDelta, 100)));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/intelligence-increase")
@@ -200,7 +200,7 @@ public class GargoyleController {
         gargoyle.setIntelligence(Math.max(0, Math.min(gargoyle.getIntelligence() + intelligenceDelta, 100)));
         gargoyle.setHappiness(Math.max(0, Math.min(gargoyle.getHappiness() + happinessDelta, 100)));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/hunger-increase")
@@ -208,7 +208,7 @@ public class GargoyleController {
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHunger(Math.min(gargoyle.getHunger() + delta, 100));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/entertainment-increase")
@@ -216,7 +216,7 @@ public class GargoyleController {
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHappiness(Math.min(gargoyle.getHappiness() + delta, 100));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/entertainment-decrease")
@@ -224,7 +224,7 @@ public class GargoyleController {
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHappiness(Math.max(0, gargoyle.getHappiness() - delta));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     @PostMapping("/hunger-decrease")
@@ -232,7 +232,7 @@ public class GargoyleController {
         Gargoyle gargoyle = gargoyleRepository.findById(gargoyleId).orElseThrow();
         gargoyle.setHunger(Math.max(0, gargoyle.getHunger() - delta));
         gargoyleRepository.save(gargoyle);
-        return new RedirectView("/game");
+        return new RedirectView("game");
     }
 
     // ----------------------------------------------------------
